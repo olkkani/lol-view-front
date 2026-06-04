@@ -13,6 +13,7 @@
     ]
   },
   "enabledPlugins": {
-    "superpowers@superpowers-marketplace": true
+    "superpowers@superpowers-marketplace": true,
+    "andrej-karpathy-skills@karpathy-skills": true
   }
 }
