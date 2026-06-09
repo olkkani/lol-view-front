@@ -1,3 +1,7 @@
+## Communication Style
+- Be brief and concise in all responses
+- Avoid unnecessary explanations
+
 ## gstack (REQUIRED — global install)
 
 **Before doing ANY work, verify gstack is installed:**
