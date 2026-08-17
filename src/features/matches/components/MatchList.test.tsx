@@ -94,8 +94,14 @@ describe('MatchList', () => {
   });
 
   it('reorders a match from live-pinned to time-sorted position after a poll updates its status', async () => {
-    const live = makeMatch({ id: 'now-finished', kickoffAt: '2026-08-17T10:00:00Z', isLive: true, score: [1, 0] });
-    const upcoming = makeMatch({ id: 'upcoming', kickoffAt: '2026-08-17T09:00:00Z', isLive: false });
+    // Kickoff times are relative to "now" so this test doesn't self-expire
+    // once the system clock passes any hardcoded date (same class of bug
+    // fixed in MatchCard.test.tsx during Task 5's fix round).
+    const now = Date.now();
+    const liveKickoff = new Date(now + 60 * 60 * 1000).toISOString();
+    const upcomingKickoff = new Date(now + 30 * 60 * 1000).toISOString();
+    const live = makeMatch({ id: 'now-finished', kickoffAt: liveKickoff, isLive: true, score: [1, 0] });
+    const upcoming = makeMatch({ id: 'upcoming', kickoffAt: upcomingKickoff, isLive: false });
 
     const spy = vi.spyOn(useMatchesModule, 'useMatches');
 
