@@ -4,46 +4,54 @@ import type { Match } from '../types';
 
 function makeMatch(overrides: Partial<Match>): Match {
   return {
-    id: 'm1',
-    league: 'LCK',
-    teams: [
-      { id: 't1', name: 'T1' },
-      { id: 't2', name: 'GEN' },
+    id: 1,
+    matchLabel: 'Week 1 Day 2',
+    startTime: '2026-08-17T05:00:00Z',
+    matchState: 'SCHEDULED',
+    clubs: [
+      { name: 'T1', logoUrl: 'https://example.com/t1.png', score: 0 },
+      { name: 'GEN', logoUrl: 'https://example.com/gen.png', score: 0 },
     ],
-    kickoffAt: '2026-08-17T05:00:00Z',
-    isLive: false,
     ...overrides,
   };
 }
 
 describe('sortMatches', () => {
   it('sorts today matches by kickoff time when none are live', () => {
-    const later = makeMatch({ id: 'later', kickoffAt: '2026-08-17T08:00:00Z' });
-    const earlier = makeMatch({ id: 'earlier', kickoffAt: '2026-08-17T05:00:00Z' });
+    const later = makeMatch({ id: 2, startTime: '2026-08-17T08:00:00Z' });
+    const earlier = makeMatch({ id: 1, startTime: '2026-08-17T05:00:00Z' });
     const result = sortMatches([later, earlier], 'today');
-    expect(result.map((m) => m.id)).toEqual(['earlier', 'later']);
+    expect(result.map((m) => m.id)).toEqual([1, 2]);
   });
 
-  it('pins the single live match to the top regardless of kickoff time', () => {
-    const finished = makeMatch({ id: 'finished', kickoffAt: '2026-08-17T02:00:00Z', isLive: false });
-    const live = makeMatch({ id: 'live', kickoffAt: '2026-08-17T09:00:00Z', isLive: true });
-    const upcoming = makeMatch({ id: 'upcoming', kickoffAt: '2026-08-17T12:00:00Z', isLive: false });
-    const result = sortMatches([finished, upcoming, live], 'today');
-    expect(result.map((m) => m.id)).toEqual(['live', 'finished', 'upcoming']);
+  it('pins the single ongoing match to the top regardless of kickoff time', () => {
+    const finished = makeMatch({ id: 1, startTime: '2026-08-17T02:00:00Z', matchState: 'FINISHED' });
+    const ongoing = makeMatch({ id: 2, startTime: '2026-08-17T09:00:00Z', matchState: 'ONGOING' });
+    const scheduled = makeMatch({ id: 3, startTime: '2026-08-17T12:00:00Z', matchState: 'SCHEDULED' });
+    const result = sortMatches([finished, scheduled, ongoing], 'today');
+    expect(result.map((m) => m.id)).toEqual([2, 1, 3]);
   });
 
-  it('sorts multiple live matches among themselves by kickoff time', () => {
-    const liveLater = makeMatch({ id: 'live-later', kickoffAt: '2026-08-17T09:00:00Z', isLive: true });
-    const liveEarlier = makeMatch({ id: 'live-earlier', kickoffAt: '2026-08-17T07:00:00Z', isLive: true });
-    const result = sortMatches([liveLater, liveEarlier], 'today');
-    expect(result.map((m) => m.id)).toEqual(['live-earlier', 'live-later']);
+  it('sorts multiple ongoing matches among themselves by kickoff time', () => {
+    const ongoingLater = makeMatch({ id: 1, startTime: '2026-08-17T09:00:00Z', matchState: 'ONGOING' });
+    const ongoingEarlier = makeMatch({ id: 2, startTime: '2026-08-17T07:00:00Z', matchState: 'ONGOING' });
+    const result = sortMatches([ongoingLater, ongoingEarlier], 'today');
+    expect(result.map((m) => m.id)).toEqual([2, 1]);
   });
 
-  it('ignores isLive on yesterday and upcoming tabs, sorting by kickoff time only', () => {
-    const flaggedLive = makeMatch({ id: 'flagged-live', kickoffAt: '2026-08-16T09:00:00Z', isLive: true });
-    const normal = makeMatch({ id: 'normal', kickoffAt: '2026-08-16T05:00:00Z', isLive: false });
-    const result = sortMatches([flaggedLive, normal], 'yesterday');
-    expect(result.map((m) => m.id)).toEqual(['normal', 'flagged-live']);
+  it('ignores matchState on yesterday and upcoming tabs, sorting by kickoff time only', () => {
+    const flaggedOngoing = makeMatch({ id: 1, startTime: '2026-08-16T09:00:00Z', matchState: 'ONGOING' });
+    const normal = makeMatch({ id: 2, startTime: '2026-08-16T05:00:00Z', matchState: 'FINISHED' });
+    const result = sortMatches([flaggedOngoing, normal], 'yesterday');
+    expect(result.map((m) => m.id)).toEqual([2, 1]);
+  });
+
+  it('treats an unrecognized matchState value as not-live (defensive default)', () => {
+    const unknownState = makeMatch({ id: 1, startTime: '2026-08-17T02:00:00Z', matchState: 'CANCELLED' });
+    const scheduled = makeMatch({ id: 2, startTime: '2026-08-17T09:00:00Z', matchState: 'SCHEDULED' });
+    const result = sortMatches([scheduled, unknownState], 'today');
+    // Neither is ONGOING, so plain kickoff-ascending order applies — id 1 (02:00) before id 2 (09:00).
+    expect(result.map((m) => m.id)).toEqual([1, 2]);
   });
 
   it('returns an empty array unchanged', () => {
