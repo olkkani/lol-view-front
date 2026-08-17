@@ -18,8 +18,8 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 ### compile result
-frontend/node_modules/
-frontend/dist/
+node_modules/
+dist/
 
 dist-ssr
 *.local
@@ -53,8 +53,7 @@ out/
 .idea/**/shelf
 .fleet/**
 #### for moudle
-backend/.idea
-frontend/.idea
+.idea
 
 # AWS User-specific
 .idea/**/aws.xml
