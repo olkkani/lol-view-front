@@ -6,40 +6,68 @@ import type { Match } from '../types';
 
 function makeMatch(overrides: Partial<Match>): Match {
   return {
-    id: 'm1',
-    league: 'LCK',
-    teams: [
-      { id: 't1', name: 'T1' },
-      { id: 't2', name: 'GEN' },
+    id: 1,
+    matchLabel: 'Week 1 Day 2',
+    startTime: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+    matchState: 'SCHEDULED',
+    clubs: [
+      { name: 'T1', logoUrl: '', score: 0 },
+      { name: 'GEN', logoUrl: '', score: 0 },
     ],
-    kickoffAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-    isLive: false,
-    seriesFormat: 'Bo5',
     ...overrides,
   };
 }
 
 describe('MatchCard', () => {
-  it('renders team names, league, and series format', () => {
+  it('renders team names and matchLabel', () => {
     render(<MatchCard match={makeMatch({})} />);
     expect(screen.getByText('T1')).toBeInTheDocument();
     expect(screen.getByText('GEN')).toBeInTheDocument();
-    expect(screen.getByText('LCK')).toBeInTheDocument();
-    expect(screen.getByText('Bo5')).toBeInTheDocument();
+    expect(screen.getByText('Week 1 Day 2')).toBeInTheDocument();
   });
 
-  it('shows a LIVE badge when the match is live', () => {
-    render(<MatchCard match={makeMatch({ isLive: true, score: [1, 0] })} />);
+  it('shows a LIVE badge when matchState is ONGOING', () => {
+    render(
+      <MatchCard
+        match={makeMatch({
+          matchState: 'ONGOING',
+          clubs: [
+            { name: 'T1', logoUrl: '', score: 1 },
+            { name: 'GEN', logoUrl: '', score: 0 },
+          ],
+        })}
+      />
+    );
     expect(screen.getByText('LIVE')).toBeInTheDocument();
   });
 
   it('does not show a LIVE badge for a finished match', () => {
-    render(<MatchCard match={makeMatch({ isLive: false, score: [2, 1] })} />);
+    render(
+      <MatchCard
+        match={makeMatch({
+          matchState: 'FINISHED',
+          clubs: [
+            { name: 'T1', logoUrl: '', score: 2 },
+            { name: 'GEN', logoUrl: '', score: 1 },
+          ],
+        })}
+      />
+    );
     expect(screen.queryByText('LIVE')).not.toBeInTheDocument();
   });
 
-  it('renders both scores with equal color when live (no winner yet)', () => {
-    render(<MatchCard match={makeMatch({ isLive: true, score: [1, 0] })} />);
+  it('renders both scores with equal color when ongoing (no winner yet)', () => {
+    render(
+      <MatchCard
+        match={makeMatch({
+          matchState: 'ONGOING',
+          clubs: [
+            { name: 'T1', logoUrl: '', score: 1 },
+            { name: 'GEN', logoUrl: '', score: 0 },
+          ],
+        })}
+      />
+    );
     const winnerScore = screen.getByTestId('score-team-0');
     const loserScore = screen.getByTestId('score-team-1');
     expect(winnerScore.className).not.toContain('text-[color:var(--muted-soft');
@@ -47,31 +75,57 @@ describe('MatchCard', () => {
   });
 
   it('dims the losing score for a finished match', () => {
-    render(<MatchCard match={makeMatch({ isLive: false, score: [2, 1] })} />);
+    render(
+      <MatchCard
+        match={makeMatch({
+          matchState: 'FINISHED',
+          clubs: [
+            { name: 'T1', logoUrl: '', score: 2 },
+            { name: 'GEN', logoUrl: '', score: 1 },
+          ],
+        })}
+      />
+    );
     const winnerScore = screen.getByTestId('score-team-0');
     const loserScore = screen.getByTestId('score-team-1');
     expect(winnerScore.className).not.toContain('text-[color:var(--muted-soft');
     expect(loserScore.className).toContain('text-[color:var(--muted-soft');
   });
 
-  it('shows kickoff time instead of a score for an upcoming match', () => {
-    render(<MatchCard match={makeMatch({ isLive: false, score: undefined })} />);
+  it('shows kickoff time instead of a score for a scheduled match', () => {
+    render(<MatchCard match={makeMatch({ matchState: 'SCHEDULED' })} />);
     expect(screen.queryByTestId('score-team-0')).not.toBeInTheDocument();
     expect(screen.getByTestId('kickoff-time')).toBeInTheDocument();
   });
 
-  it('shows a cancelled badge when there is no score and kickoff is in the past', () => {
-    const past = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+  it('shows a fallback state when clubs is empty (teams not yet assigned)', () => {
     render(
       <MatchCard
-        match={makeMatch({ isLive: false, score: undefined, kickoffAt: past, status: 'cancelled' })}
+        match={makeMatch({ matchState: 'SCHEDULED', clubs: [] })}
       />
     );
-    expect(screen.getByText(/취소|연기/)).toBeInTheDocument();
+    expect(screen.getByText('대진 미정')).toBeInTheDocument();
+    expect(screen.queryByTestId('score-team-0')).not.toBeInTheDocument();
   });
 
-  it('falls back to team initial when logoUrl is missing', () => {
+  it('falls back to team initial when logoUrl is empty', () => {
     render(<MatchCard match={makeMatch({})} />);
     expect(screen.getByText('T')).toBeInTheDocument();
+  });
+
+  it('treats an unrecognized matchState as not-live and not-finished (falls back to scheduled rendering)', () => {
+    render(
+      <MatchCard
+        match={makeMatch({
+          matchState: 'CANCELLED',
+          clubs: [
+            { name: 'T1', logoUrl: '', score: 0 },
+            { name: 'GEN', logoUrl: '', score: 0 },
+          ],
+        })}
+      />
+    );
+    expect(screen.queryByText('LIVE')).not.toBeInTheDocument();
+    expect(screen.getByTestId('kickoff-time')).toBeInTheDocument();
   });
 });

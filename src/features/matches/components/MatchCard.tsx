@@ -1,8 +1,8 @@
 // src/features/matches/components/MatchCard.tsx
 import { cn } from '@/lib/utils';
-import type { Match } from '../types';
+import type { Club, Match } from '../types';
 
-function TeamLogo({ name, logoUrl }: { name: string; logoUrl?: string }) {
+function TeamLogo({ name, logoUrl }: { name: string; logoUrl: string }) {
   if (logoUrl) {
     return <img src={logoUrl} alt="" className="size-8 rounded-lg" />;
   }
@@ -13,89 +13,90 @@ function TeamLogo({ name, logoUrl }: { name: string; logoUrl?: string }) {
   );
 }
 
-function isCancelledOrPostponed(match: Match): boolean {
-  const kickoffPassed = new Date(match.kickoffAt).getTime() < Date.now();
-  return !match.isLive && !match.score && kickoffPassed;
+function TeamSlot({ club, align }: { club: Club; align: 'left' | 'right' }) {
+  return (
+    <div
+      className={cn(
+        'flex flex-1 items-center gap-2',
+        align === 'right' && 'flex-row-reverse text-right'
+      )}
+    >
+      <TeamLogo name={club.name} logoUrl={club.logoUrl} />
+      <span className="text-sm font-semibold">{club.name}</span>
+    </div>
+  );
 }
 
 export function MatchCard({ match }: { match: Match }) {
-  const [teamA, teamB] = match.teams;
-  const cancelled = isCancelledOrPostponed(match);
-  const isUpcoming = !match.isLive && !match.score && !cancelled;
-  const isFinished = !match.isLive && !!match.score;
+  const isOngoing = match.matchState === 'ONGOING';
+  const isFinished = match.matchState === 'FINISHED';
+  const hasTeams = match.clubs.length === 2;
+
+  const [clubA, clubB] = hasTeams ? match.clubs : [];
 
   const winnerIndex =
-    isFinished && match.score ? (match.score[0] > match.score[1] ? 0 : 1) : null;
+    isFinished && clubA && clubB
+      ? clubA.score > clubB.score
+        ? 0
+        : 1
+      : null;
 
   return (
     <div
       className={cn(
         'flex flex-col gap-2 rounded-[14px] border border-[color:var(--hairline-soft,#ebebeb)] p-4',
         'shadow-[rgba(0,0,0,0.02)_0_0_0_1px,rgba(0,0,0,0.04)_0_2px_6px,rgba(0,0,0,0.1)_0_4px_8px]',
-        match.isLive && 'border-[color:var(--brand-rausch,#ff385c)]'
+        isOngoing && 'border-[color:var(--brand-rausch,#ff385c)]'
       )}
     >
       <div className="flex items-center justify-between text-xs text-[color:var(--muted-ink,#6a6a6a)]">
-        <span className="font-semibold">{match.league}</span>
-        {match.isLive && (
+        <span className="font-semibold">{match.matchLabel}</span>
+        {isOngoing && (
           <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--brand-rausch,#ff385c)] px-2 py-0.5 text-[11px] font-bold text-white">
             <span className="size-1.5 rounded-full bg-white" />
             LIVE
           </span>
         )}
-        {cancelled && (
-          <span className="rounded-full bg-[color:var(--surface-strong,#f2f2f2)] px-2 py-0.5 text-[11px] font-semibold text-[color:var(--muted-ink,#6a6a6a)]">
-            취소
-          </span>
-        )}
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="flex flex-1 items-center gap-2">
-          <TeamLogo name={teamA.name} logoUrl={teamA.logoUrl} />
-          <span className="text-sm font-semibold">{teamA.name}</span>
+      {!hasTeams ? (
+        <div className="py-2 text-center text-sm text-[color:var(--muted-ink,#6a6a6a)]">
+          대진 미정
         </div>
+      ) : (
+        <div className="flex items-center justify-between">
+          <TeamSlot club={clubA!} align="left" />
 
-        <div className="flex min-w-14 flex-col items-center gap-0.5 px-3">
-          {match.score && !cancelled ? (
-            <>
+          <div className="flex min-w-14 flex-col items-center gap-0.5 px-3">
+            {isFinished || isOngoing ? (
               <div className="flex text-[21px] font-bold tabular-nums">
-                <span data-testid="score-team-0" className={winnerIndex === 1 ? 'text-[color:var(--muted-soft,#929292)] font-medium' : ''}>
-                  {match.score[0]}
+                <span
+                  data-testid="score-team-0"
+                  className={winnerIndex === 1 ? 'text-[color:var(--muted-soft,#929292)] font-medium' : ''}
+                >
+                  {clubA!.score}
                 </span>
                 <span className="mx-1 font-normal text-[color:var(--muted-soft,#929292)]">:</span>
-                <span data-testid="score-team-1" className={winnerIndex === 0 ? 'text-[color:var(--muted-soft,#929292)] font-medium' : ''}>
-                  {match.score[1]}
+                <span
+                  data-testid="score-team-1"
+                  className={winnerIndex === 0 ? 'text-[color:var(--muted-soft,#929292)] font-medium' : ''}
+                >
+                  {clubB!.score}
                 </span>
               </div>
-              {match.seriesFormat && (
-                <span className="text-[11px] font-semibold text-[color:var(--muted-ink,#6a6a6a)]">
-                  {match.seriesFormat}
-                </span>
-              )}
-            </>
-          ) : isUpcoming ? (
-            <>
+            ) : (
               <span data-testid="kickoff-time" className="text-lg font-bold tabular-nums">
-                {new Date(match.kickoffAt).toLocaleTimeString('ko-KR', {
+                {new Date(match.startTime).toLocaleTimeString('ko-KR', {
                   hour: '2-digit',
                   minute: '2-digit',
                 })}
               </span>
-              {match.seriesFormat && (
-                <span className="text-[11px] font-semibold text-[color:var(--muted-ink,#6a6a6a)]">
-                  {match.seriesFormat}
-                </span>
-              )}
-            </>
-          ) : null}
-        </div>
+            )}
+          </div>
 
-        <div className="flex flex-1 flex-row-reverse items-center gap-2 text-right">
-          <TeamLogo name={teamB.name} logoUrl={teamB.logoUrl} />
-          <span className="text-sm font-semibold">{teamB.name}</span>
+          <TeamSlot club={clubB!} align="right" />
         </div>
-      </div>
+      )}
     </div>
   );
 }
