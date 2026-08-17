@@ -8,14 +8,14 @@ import type { Match } from '../types';
 
 function makeMatch(overrides: Partial<Match>): Match {
   return {
-    id: 'm1',
-    league: 'LCK',
-    teams: [
-      { id: 't1', name: 'T1' },
-      { id: 't2', name: 'GEN' },
+    id: 1,
+    matchLabel: 'Week 1 Day 2',
+    startTime: '2026-08-17T05:00:00Z',
+    matchState: 'SCHEDULED',
+    clubs: [
+      { name: 'T1', logoUrl: '', score: 0 },
+      { name: 'GEN', logoUrl: '', score: 0 },
     ],
-    kickoffAt: '2026-08-17T05:00:00Z',
-    isLive: false,
     ...overrides,
   };
 }
@@ -94,19 +94,27 @@ describe('MatchList', () => {
   });
 
   it('reorders a match from live-pinned to time-sorted position after a poll updates its status', async () => {
-    // Kickoff times are relative to "now" so this test doesn't self-expire
+    // startTime values are relative to "now" so this test doesn't self-expire
     // once the system clock passes any hardcoded date (same class of bug
-    // fixed in MatchCard.test.tsx during Task 5's fix round).
+    // fixed in MatchCard.test.tsx during a prior fix round).
     const now = Date.now();
-    const liveKickoff = new Date(now + 60 * 60 * 1000).toISOString();
-    const upcomingKickoff = new Date(now + 30 * 60 * 1000).toISOString();
-    const live = makeMatch({ id: 'now-finished', kickoffAt: liveKickoff, isLive: true, score: [1, 0] });
-    const upcoming = makeMatch({ id: 'upcoming', kickoffAt: upcomingKickoff, isLive: false });
+    const ongoingKickoff = new Date(now + 60 * 60 * 1000).toISOString();
+    const scheduledKickoff = new Date(now + 30 * 60 * 1000).toISOString();
+    const ongoing = makeMatch({
+      id: 1,
+      startTime: ongoingKickoff,
+      matchState: 'ONGOING',
+      clubs: [
+        { name: 'T1', logoUrl: '', score: 1 },
+        { name: 'GEN', logoUrl: '', score: 0 },
+      ],
+    });
+    const scheduled = makeMatch({ id: 2, startTime: scheduledKickoff, matchState: 'SCHEDULED' });
 
     const spy = vi.spyOn(useMatchesModule, 'useMatches');
 
     spy.mockReturnValue({
-      data: [upcoming, live],
+      data: [scheduled, ongoing],
       isLoading: false,
       isError: false,
       refetch: vi.fn(),
@@ -117,9 +125,9 @@ describe('MatchList', () => {
     let cards = screen.getAllByTestId(/score-team-0|kickoff-time/);
     expect(cards[0]).toHaveTextContent('1');
 
-    const finished = { ...live, isLive: false, score: [1, 0] as [number, number] };
+    const finished = { ...ongoing, matchState: 'FINISHED' as const };
     spy.mockReturnValue({
-      data: [finished, upcoming],
+      data: [finished, scheduled],
       isLoading: false,
       isError: false,
       refetch: vi.fn(),
