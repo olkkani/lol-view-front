@@ -45,7 +45,7 @@ export function MatchCard({ match }: { match: Match }) {
         )}
         {cancelled && (
           <span className="rounded-full bg-[color:var(--surface-strong,#f2f2f2)] px-2 py-0.5 text-[11px] font-semibold text-[color:var(--muted,#6a6a6a)]">
-            {match.status === 'cancelled' ? '취소' : '연기'}
+            취소
           </span>
         )}
       </div>
