@@ -10,6 +10,7 @@ export function Header() {
       <button
         type="button"
         aria-label="메뉴"
+        aria-expanded={menuOpen}
         onClick={() => setMenuOpen((prev) => !prev)}
         className="flex size-11 flex-col items-center justify-center gap-1"
       >
