@@ -42,16 +42,16 @@ describe('MatchCard', () => {
     render(<MatchCard match={makeMatch({ isLive: true, score: [1, 0] })} />);
     const winnerScore = screen.getByTestId('score-team-0');
     const loserScore = screen.getByTestId('score-team-1');
-    expect(winnerScore.className).not.toContain('text-muted-soft');
-    expect(loserScore.className).not.toContain('text-muted-soft');
+    expect(winnerScore.className).not.toContain('text-[color:var(--muted-soft');
+    expect(loserScore.className).not.toContain('text-[color:var(--muted-soft');
   });
 
   it('dims the losing score for a finished match', () => {
     render(<MatchCard match={makeMatch({ isLive: false, score: [2, 1] })} />);
     const winnerScore = screen.getByTestId('score-team-0');
     const loserScore = screen.getByTestId('score-team-1');
-    expect(winnerScore.className).not.toContain('text-muted-soft');
-    expect(loserScore.className).toContain('text-muted-soft');
+    expect(winnerScore.className).not.toContain('text-[color:var(--muted-soft');
+    expect(loserScore.className).toContain('text-[color:var(--muted-soft');
   });
 
   it('shows kickoff time instead of a score for an upcoming match', () => {

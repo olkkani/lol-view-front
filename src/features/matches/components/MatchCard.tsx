@@ -32,13 +32,13 @@ export function MatchCard({ match }: { match: Match }) {
       className={cn(
         'flex flex-col gap-2 rounded-[14px] border border-[color:var(--hairline-soft,#ebebeb)] p-4',
         'shadow-[rgba(0,0,0,0.02)_0_0_0_1px,rgba(0,0,0,0.04)_0_2px_6px,rgba(0,0,0,0.1)_0_4px_8px]',
-        match.isLive && 'border-[color:var(--primary,#ff385c)]'
+        match.isLive && 'border-[color:var(--brand-rausch,#ff385c)]'
       )}
     >
       <div className="flex items-center justify-between text-xs text-[color:var(--muted,#6a6a6a)]">
         <span className="font-semibold">{match.league}</span>
         {match.isLive && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--primary,#ff385c)] px-2 py-0.5 text-[11px] font-bold text-white">
+          <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--brand-rausch,#ff385c)] px-2 py-0.5 text-[11px] font-bold text-white">
             <span className="size-1.5 rounded-full bg-white" />
             LIVE
           </span>
@@ -60,11 +60,11 @@ export function MatchCard({ match }: { match: Match }) {
           {match.score && !cancelled ? (
             <>
               <div className="flex text-[21px] font-bold tabular-nums">
-                <span data-testid="score-team-0" className={winnerIndex === 1 ? 'text-muted-soft text-[color:var(--muted-soft,#929292)] font-medium' : ''}>
+                <span data-testid="score-team-0" className={winnerIndex === 1 ? 'text-[color:var(--muted-soft,#929292)] font-medium' : ''}>
                   {match.score[0]}
                 </span>
                 <span className="mx-1 font-normal text-[color:var(--muted-soft,#929292)]">:</span>
-                <span data-testid="score-team-1" className={winnerIndex === 0 ? 'text-muted-soft text-[color:var(--muted-soft,#929292)] font-medium' : ''}>
+                <span data-testid="score-team-1" className={winnerIndex === 0 ? 'text-[color:var(--muted-soft,#929292)] font-medium' : ''}>
                   {match.score[1]}
                 </span>
               </div>

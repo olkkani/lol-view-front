@@ -54,6 +54,30 @@ describe('MatchList', () => {
     expect(screen.getByText('예정된 경기가 없어요')).toBeInTheDocument();
   });
 
+  it('shows a range-specific empty state for the yesterday tab', () => {
+    vi.spyOn(useMatchesModule, 'useMatches').mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useMatchesModule.useMatches>);
+
+    renderWithClient(<MatchList range="yesterday" />);
+    expect(screen.getByText('어제 경기가 없어요')).toBeInTheDocument();
+  });
+
+  it('shows a range-specific empty state for the today tab', () => {
+    vi.spyOn(useMatchesModule, 'useMatches').mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useMatchesModule.useMatches>);
+
+    renderWithClient(<MatchList range="today" />);
+    expect(screen.getByText('오늘 예정된 경기가 없어요')).toBeInTheDocument();
+  });
+
   it('shows the error state with a working retry button', async () => {
     const refetch = vi.fn();
     vi.spyOn(useMatchesModule, 'useMatches').mockReturnValue({

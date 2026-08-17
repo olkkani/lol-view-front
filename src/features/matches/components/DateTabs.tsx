@@ -23,10 +23,11 @@ export function DateTabs({
           type="button"
           role="tab"
           aria-selected={active === tab.value}
+          aria-controls="match-list-panel"
           onClick={() => onChange(tab.value)}
           className={cn(
             'min-h-11 flex-1 border-b-2 border-transparent text-sm font-semibold text-[color:var(--muted,#6a6a6a)]',
-            active === tab.value && 'border-[color:var(--primary,#ff385c)] text-[color:var(--ink,#222222)]'
+            active === tab.value && 'border-[color:var(--brand-rausch,#ff385c)] text-[color:var(--ink,#222222)]'
           )}
         >
           {tab.label}

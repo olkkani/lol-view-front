@@ -29,7 +29,9 @@ function HomePage() {
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-white">
       <Header />
       <DateTabs active={range} onChange={handleChange} />
-      <MatchList range={range} />
+      <div role="tabpanel" id="match-list-panel">
+        <MatchList range={range} />
+      </div>
     </div>
   );
 }

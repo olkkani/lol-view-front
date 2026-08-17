@@ -37,9 +37,16 @@ export function MatchList({ range }: { range: MatchesRange }) {
   }
 
   if (sorted.length === 0) {
+    const emptyMessage =
+      range === 'yesterday'
+        ? '어제 경기가 없어요'
+        : range === 'today'
+          ? '오늘 예정된 경기가 없어요'
+          : '예정된 경기가 없어요';
+
     return (
       <div className="py-16 text-center text-sm text-[color:var(--muted,#6a6a6a)]">
-        예정된 경기가 없어요
+        {emptyMessage}
       </div>
     );
   }
