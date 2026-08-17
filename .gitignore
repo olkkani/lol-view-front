@@ -11,6 +11,10 @@ bckend/**/build/
 !**/src/test/**/build/
 
 ## Frontend
+### Env
+.env
+.env.dev
+!.env.example
 ### Log
 npm-debug.log*
 yarn-debug.log*

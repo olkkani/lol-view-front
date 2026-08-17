@@ -35,7 +35,7 @@ export function MatchCard({ match }: { match: Match }) {
         match.isLive && 'border-[color:var(--brand-rausch,#ff385c)]'
       )}
     >
-      <div className="flex items-center justify-between text-xs text-[color:var(--muted,#6a6a6a)]">
+      <div className="flex items-center justify-between text-xs text-[color:var(--muted-ink,#6a6a6a)]">
         <span className="font-semibold">{match.league}</span>
         {match.isLive && (
           <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--brand-rausch,#ff385c)] px-2 py-0.5 text-[11px] font-bold text-white">
@@ -44,7 +44,7 @@ export function MatchCard({ match }: { match: Match }) {
           </span>
         )}
         {cancelled && (
-          <span className="rounded-full bg-[color:var(--surface-strong,#f2f2f2)] px-2 py-0.5 text-[11px] font-semibold text-[color:var(--muted,#6a6a6a)]">
+          <span className="rounded-full bg-[color:var(--surface-strong,#f2f2f2)] px-2 py-0.5 text-[11px] font-semibold text-[color:var(--muted-ink,#6a6a6a)]">
             취소
           </span>
         )}
@@ -69,7 +69,7 @@ export function MatchCard({ match }: { match: Match }) {
                 </span>
               </div>
               {match.seriesFormat && (
-                <span className="text-[11px] font-semibold text-[color:var(--muted,#6a6a6a)]">
+                <span className="text-[11px] font-semibold text-[color:var(--muted-ink,#6a6a6a)]">
                   {match.seriesFormat}
                 </span>
               )}
@@ -83,7 +83,7 @@ export function MatchCard({ match }: { match: Match }) {
                 })}
               </span>
               {match.seriesFormat && (
-                <span className="text-[11px] font-semibold text-[color:var(--muted,#6a6a6a)]">
+                <span className="text-[11px] font-semibold text-[color:var(--muted-ink,#6a6a6a)]">
                   {match.seriesFormat}
                 </span>
               )}

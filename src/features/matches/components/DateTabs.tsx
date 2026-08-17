@@ -26,7 +26,7 @@ export function DateTabs({
           aria-controls="match-list-panel"
           onClick={() => onChange(tab.value)}
           className={cn(
-            'min-h-11 flex-1 border-b-2 border-transparent text-sm font-semibold text-[color:var(--muted,#6a6a6a)]',
+            'min-h-11 flex-1 border-b-2 border-transparent text-sm font-semibold text-[color:var(--body-ink,#3f3f3f)]',
             active === tab.value && 'border-[color:var(--brand-rausch,#ff385c)] text-[color:var(--ink,#222222)]'
           )}
         >

@@ -23,7 +23,7 @@ export function MatchList({ range }: { range: MatchesRange }) {
 
   if (isError) {
     return (
-      <div className="flex flex-col items-center gap-3 py-16 text-center text-sm text-[color:var(--muted,#6a6a6a)]">
+      <div className="flex flex-col items-center gap-3 py-16 text-center text-sm text-[color:var(--muted-ink,#6a6a6a)]">
         <p>경기 정보를 불러오지 못했어요.</p>
         <button
           type="button"
@@ -45,7 +45,7 @@ export function MatchList({ range }: { range: MatchesRange }) {
           : '예정된 경기가 없어요';
 
     return (
-      <div className="py-16 text-center text-sm text-[color:var(--muted,#6a6a6a)]">
+      <div className="py-16 text-center text-sm text-[color:var(--muted-ink,#6a6a6a)]">
         {emptyMessage}
       </div>
     );

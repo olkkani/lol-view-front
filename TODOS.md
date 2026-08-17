@@ -1,5 +1,19 @@
 # TODOs
 
+## prd 환경에서의 백엔드 프록시 방식 결정
+
+**What:** `vite.config.ts`의 `server.proxy['/api']`는 dev 서버 전용이다. `vite build`로 만든 정적 파일은 이 프록시를 통과하지 않으므로, prd 배포 환경에서 프론트가 백엔드로 요청을 보낼 방법을 별도로 정해야 한다.
+
+**Why:** profile별 base URL 분기(dev: `localhost:9031`, prd: 서버 주소 미정) 작업 중 발견. prd 서버 주소가 아직 확정되지 않아 이번엔 dev 프록시 배선까지만 구현하고 prd는 `.env.prod`에 빈 값 플레이스홀더로 남겨뒀다.
+
+**Pros:** 지금 미리 결정하지 않아도 dev 환경은 완전히 동작한다 — 급하지 않음.
+
+**Cons:** prd 서버 주소가 정해지는 시점에 반드시 결정해야 함 — 안 하면 배포된 프론트가 백엔드를 호출할 방법이 없음. 후보: (1) 배포 서버(Nginx 등)에서 `/api` 리버스 프록시, (2) 백엔드가 프론트 도메인에 CORS 허용, (3) `VITE_API_TARGET`을 절대 URL로 두고 프론트에서 직접 fetch(CORS 필요).
+
+**Context:** `vite.config.ts`의 `server.proxy` 블록, `src/features/matches/api/fetchMatches.ts`의 `/api/matches` 상대 경로 fetch. `.env.example` 참고.
+
+**Depends on / blocked by:** prd 백엔드 서버 주소 확정.
+
 ## 백엔드 응답 스키마 확정 후 가정 타입 갱신
 
 **What:** `docs/designs/lol-match-viewer.md`의 "API 응답 타입 (가정)" 섹션과 `features/matches/types.ts`(구현 후)를 실제 백엔드 응답으로 검증하고 필요시 수정.
