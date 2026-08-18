@@ -1,21 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { sortMatches } from './sortMatches';
-import type { Match } from '../types';
-
-function makeMatch(overrides: Partial<Match>): Match {
-  return {
-    id: 1,
-    leagueName: 'LCK',
-    matchLabel: 'Week 1 Day 2',
-    startTime: '2026-08-17T05:00:00Z',
-    matchState: 'SCHEDULED',
-    clubs: [
-      { name: 'T1', logoUrl: 'https://example.com/t1.png', score: 0 },
-      { name: 'GEN', logoUrl: 'https://example.com/gen.png', score: 0 },
-    ],
-    ...overrides,
-  };
-}
+import { makeMatch } from '../test/fixtures';
 
 describe('sortMatches', () => {
   it('sorts today matches by kickoff time when none are live', () => {

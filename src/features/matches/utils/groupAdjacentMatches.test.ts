@@ -1,21 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { groupAdjacentMatches } from './groupAdjacentMatches';
+import { makeMatch } from '../test/fixtures';
 import type { Match } from '../types';
-
-function makeMatch(overrides: Partial<Match>): Match {
-  return {
-    id: 1,
-    leagueName: 'LCK',
-    matchLabel: 'Week 1 Day 2',
-    startTime: '2026-08-17T05:00:00Z',
-    matchState: 'SCHEDULED',
-    clubs: [
-      { name: 'T1', logoUrl: '', score: 0 },
-      { name: 'GEN', logoUrl: '', score: 0 },
-    ],
-    ...overrides,
-  };
-}
 
 describe('groupAdjacentMatches', () => {
   it('returns an empty array unchanged', () => {
