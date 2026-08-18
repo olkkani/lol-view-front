@@ -20,7 +20,13 @@ export function MatchCard({ match, range }: { match: Match; range: MatchesRange 
       : null;
 
   const openDetail = () => {
-    navigate({ search: { range, matchId: match.id } });
+    if (typeof document.startViewTransition === 'function') {
+      document.startViewTransition(() => {
+        navigate({ search: { range, matchId: match.id } });
+      });
+    } else {
+      navigate({ search: { range, matchId: match.id } });
+    }
   };
 
   return (
@@ -56,7 +62,7 @@ export function MatchCard({ match, range }: { match: Match; range: MatchesRange 
         </div>
       ) : (
         <div className="flex items-center justify-between">
-          <TeamSlot club={clubA!} align="left" />
+          <TeamSlot club={clubA!} align="left" viewTransitionName={`team-logo-${match.id}-0`} />
 
           <div className="flex min-w-14 flex-col items-center gap-0.5 px-3">
             {isFinished || isOngoing ? (
@@ -85,7 +91,7 @@ export function MatchCard({ match, range }: { match: Match; range: MatchesRange 
             )}
           </div>
 
-          <TeamSlot club={clubB!} align="right" />
+          <TeamSlot club={clubB!} align="right" viewTransitionName={`team-logo-${match.id}-1`} />
         </div>
       )}
     </div>

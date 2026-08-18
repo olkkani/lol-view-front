@@ -213,4 +213,34 @@ describe('MatchCard', () => {
     await user.keyboard(' ');
     expect(mockNavigate).toHaveBeenCalledWith({ search: { range: 'today', matchId: 42 } });
   });
+
+  it('calls document.startViewTransition when opening the modal, if the browser supports it', async () => {
+    const startViewTransition = vi.fn((cb: () => void) => {
+      cb();
+      return { finished: Promise.resolve(), ready: Promise.resolve(), updateCallbackDone: Promise.resolve() };
+    });
+    // @ts-expect-error -- test-only global patch, not in the default DOM lib types
+    document.startViewTransition = startViewTransition;
+
+    const user = userEvent.setup();
+    render(<MatchCard match={makeMatch({ id: 42 })} range="today" />);
+    await user.click(screen.getByRole('button'));
+
+    expect(startViewTransition).toHaveBeenCalledOnce();
+    expect(mockNavigate).toHaveBeenCalledWith({ search: { range: 'today', matchId: 42 } });
+
+    // @ts-expect-error -- cleanup
+    delete document.startViewTransition;
+  });
+
+  it('opens the modal via a plain navigate when the browser does not support View Transitions', async () => {
+    // @ts-expect-error -- ensure the feature-detect branch is exercised
+    delete document.startViewTransition;
+
+    const user = userEvent.setup();
+    render(<MatchCard match={makeMatch({ id: 42 })} range="today" />);
+    await user.click(screen.getByRole('button'));
+
+    expect(mockNavigate).toHaveBeenCalledWith({ search: { range: 'today', matchId: 42 } });
+  });
 });

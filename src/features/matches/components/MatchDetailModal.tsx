@@ -19,9 +19,15 @@ export function MatchDetailModal({
   const isOpen = match !== undefined;
 
   const close = () => {
-    navigate({
-      search: (prev: Record<string, unknown>) => ({ ...prev, matchId: undefined }),
-    });
+    const doClose = () =>
+      navigate({
+        search: (prev: Record<string, unknown>) => ({ ...prev, matchId: undefined }),
+      });
+    if (typeof document.startViewTransition === 'function') {
+      document.startViewTransition(doClose);
+    } else {
+      doClose();
+    }
   };
 
   const hasTeams = (match?.clubs.length ?? 0) === 2;
@@ -50,13 +56,13 @@ export function MatchDetailModal({
           {match && hasTeams && (
             <>
               <div className="flex items-center justify-between gap-4">
-                <TeamSlot club={clubA!} align="left" />
+                <TeamSlot club={clubA!} align="left" viewTransitionName={`team-logo-${match!.id}-0`} />
                 <div className="flex flex-col items-center gap-0.5 px-3 text-[21px] font-bold tabular-nums">
                   <span>{clubA!.score}</span>
                   <span className="text-sm font-normal text-[color:var(--muted-soft,#929292)]">:</span>
                   <span>{clubB!.score}</span>
                 </div>
-                <TeamSlot club={clubB!} align="right" />
+                <TeamSlot club={clubB!} align="right" viewTransitionName={`team-logo-${match!.id}-1`} />
               </div>
 
               <div>
