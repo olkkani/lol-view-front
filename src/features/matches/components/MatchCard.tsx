@@ -2,9 +2,23 @@
 import { cn } from '@/lib/utils';
 import type { Club, Match } from '../types';
 
-function TeamLogo({ name, logoUrl }: { name: string; logoUrl: string }) {
+function TeamLogo({ name, logoUrl, logoBackdrop }: { name: string; logoUrl: string; logoBackdrop?: Club['logoBackdrop'] }) {
   if (logoUrl) {
-    return <img src={logoUrl} alt="" className="size-8 rounded-lg" />;
+    const hasDarkBackdrop = logoBackdrop === 'DARK';
+    return (
+      <div
+        className={cn(
+          'flex size-8 items-center justify-center rounded-lg',
+          hasDarkBackdrop && 'bg-[color:var(--ink,#222222)] dark:bg-transparent'
+        )}
+      >
+        <img
+          src={logoUrl}
+          alt=""
+          className={cn('rounded-lg', hasDarkBackdrop ? 'size-6 dark:size-8' : 'size-8')}
+        />
+      </div>
+    );
   }
   return (
     <div className="flex size-8 items-center justify-center rounded-lg bg-[color:var(--surface-strong,#f2f2f2)] text-sm font-semibold">
@@ -21,7 +35,7 @@ function TeamSlot({ club, align }: { club: Club; align: 'left' | 'right' }) {
         align === 'right' && 'flex-row-reverse text-right'
       )}
     >
-      <TeamLogo name={club.name} logoUrl={club.logoUrl} />
+      <TeamLogo name={club.name} logoUrl={club.logoUrl} logoBackdrop={club.logoBackdrop} />
       <span className="text-sm font-semibold">{club.name}</span>
     </div>
   );
@@ -49,15 +63,14 @@ export function MatchCard({ match }: { match: Match }) {
         isOngoing && 'border-[color:var(--brand-rausch,#ff385c)]'
       )}
     >
-      <div className="flex items-center justify-between text-xs text-[color:var(--muted-ink,#6a6a6a)]">
-        <span className="font-semibold">{match.matchLabel}</span>
-        {isOngoing && (
+      {isOngoing && (
+        <div className="flex items-center justify-end">
           <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--brand-rausch,#ff385c)] px-2 py-0.5 text-[11px] font-bold text-white">
             <span className="size-1.5 rounded-full bg-white" />
             LIVE
           </span>
-        )}
-      </div>
+        </div>
+      )}
 
       {!hasTeams ? (
         <div className="py-2 text-center text-sm text-[color:var(--muted-ink,#6a6a6a)]">

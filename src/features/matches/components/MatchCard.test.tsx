@@ -7,6 +7,7 @@ import type { Match } from '../types';
 function makeMatch(overrides: Partial<Match>): Match {
   return {
     id: 1,
+    leagueName: 'LCK',
     matchLabel: 'Week 1 Day 2',
     startTime: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
     matchState: 'SCHEDULED',
@@ -19,11 +20,10 @@ function makeMatch(overrides: Partial<Match>): Match {
 }
 
 describe('MatchCard', () => {
-  it('renders team names and matchLabel', () => {
+  it('renders team names', () => {
     render(<MatchCard match={makeMatch({})} />);
     expect(screen.getByText('T1')).toBeInTheDocument();
     expect(screen.getByText('GEN')).toBeInTheDocument();
-    expect(screen.getByText('Week 1 Day 2')).toBeInTheDocument();
   });
 
   it('shows a LIVE badge when matchState is ONGOING', () => {
@@ -111,6 +111,55 @@ describe('MatchCard', () => {
   it('falls back to team initial when logoUrl is empty', () => {
     render(<MatchCard match={makeMatch({})} />);
     expect(screen.getByText('T')).toBeInTheDocument();
+  });
+
+  it('applies a dark backdrop behind the logo when logoBackdrop is "DARK"', () => {
+    const { container } = render(
+      <MatchCard
+        match={makeMatch({
+          clubs: [
+            { name: 'T1', logoUrl: 'https://example.com/t1.png', score: 0, logoBackdrop: 'DARK' },
+            { name: 'GEN', logoUrl: '', score: 0 },
+          ],
+        })}
+      />
+    );
+    const logoImg = container.querySelector('img[src="https://example.com/t1.png"]');
+    const backdrop = logoImg?.parentElement;
+    expect(backdrop?.className).toContain('bg-[color:var(--ink,#222222)]');
+    expect(backdrop?.className).toContain('dark:bg-transparent');
+  });
+
+  it('does not apply a backdrop when logoBackdrop is "ANY"', () => {
+    const { container } = render(
+      <MatchCard
+        match={makeMatch({
+          clubs: [
+            { name: 'T1', logoUrl: 'https://example.com/t1.png', score: 0, logoBackdrop: 'ANY' },
+            { name: 'GEN', logoUrl: '', score: 0 },
+          ],
+        })}
+      />
+    );
+    const logoImg = container.querySelector('img[src="https://example.com/t1.png"]');
+    const backdrop = logoImg?.parentElement;
+    expect(backdrop?.className).not.toContain('bg-[color:var(--ink');
+  });
+
+  it('does not apply a backdrop when logoBackdrop is unset', () => {
+    const { container } = render(
+      <MatchCard
+        match={makeMatch({
+          clubs: [
+            { name: 'T1', logoUrl: 'https://example.com/t1.png', score: 0 },
+            { name: 'GEN', logoUrl: '', score: 0 },
+          ],
+        })}
+      />
+    );
+    const logoImg = container.querySelector('img[src="https://example.com/t1.png"]');
+    const backdrop = logoImg?.parentElement;
+    expect(backdrop?.className).not.toContain('bg-[color:var(--ink');
   });
 
   it('treats an unrecognized matchState as not-live and not-finished (falls back to scheduled rendering)', () => {

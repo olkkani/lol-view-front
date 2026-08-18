@@ -2,6 +2,7 @@
 import { useMemo } from 'react';
 import { useMatches } from '../api/useMatches';
 import { sortMatches } from '../utils/sortMatches';
+import { groupAdjacentMatches } from '../utils/groupAdjacentMatches';
 import { MatchCard } from './MatchCard';
 import { MatchCardSkeleton } from './MatchCardSkeleton';
 import type { MatchesRange } from '../types';
@@ -10,6 +11,7 @@ export function MatchList({ range }: { range: MatchesRange }) {
   const { data, isLoading, isError, refetch } = useMatches(range);
 
   const sorted = useMemo(() => sortMatches(data ?? [], range), [data, range]);
+  const groups = useMemo(() => groupAdjacentMatches(sorted), [sorted]);
 
   if (isLoading) {
     return (
@@ -52,9 +54,16 @@ export function MatchList({ range }: { range: MatchesRange }) {
   }
 
   return (
-    <div className="flex flex-col gap-2 p-4">
-      {sorted.map((match) => (
-        <MatchCard key={match.id} match={match} />
+    <div className="flex flex-col gap-4 p-4">
+      {groups.map((group) => (
+        <div key={group.key} className="flex flex-col gap-2">
+          <span className="text-xs font-semibold text-[color:var(--muted-ink,#6a6a6a)]">
+            {group.leagueName} {group.matchLabel}
+          </span>
+          {group.matches.map((match) => (
+            <MatchCard key={match.id} match={match} />
+          ))}
+        </div>
       ))}
     </div>
   );

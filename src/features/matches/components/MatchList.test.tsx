@@ -9,6 +9,7 @@ import type { Match } from '../types';
 function makeMatch(overrides: Partial<Match>): Match {
   return {
     id: 1,
+    leagueName: 'LCK',
     matchLabel: 'Week 1 Day 2',
     startTime: '2026-08-17T05:00:00Z',
     matchState: 'SCHEDULED',
@@ -143,5 +144,99 @@ describe('MatchList', () => {
       cards = screen.getAllByTestId(/score-team-0|kickoff-time/);
       expect(cards[0]).toHaveAttribute('data-testid', 'kickoff-time');
     });
+  });
+
+  it('renders one shared header for adjacent matches with the same leagueName and matchLabel', () => {
+    const a = makeMatch({ id: 1, leagueName: 'LCK', matchLabel: 'Week 1 Day 2' });
+    const b = makeMatch({ id: 2, leagueName: 'LCK', matchLabel: 'Week 1 Day 2' });
+    vi.spyOn(useMatchesModule, 'useMatches').mockReturnValue({
+      data: [a, b],
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useMatchesModule.useMatches>);
+
+    renderWithClient(<MatchList range="upcoming" />);
+    expect(screen.getAllByText('LCK Week 1 Day 2')).toHaveLength(1);
+  });
+
+  it('renders separate headers for matches with different leagueName or matchLabel', () => {
+    const a = makeMatch({ id: 1, leagueName: 'LCK', matchLabel: 'Week 1 Day 2' });
+    const b = makeMatch({ id: 2, leagueName: 'LPL', matchLabel: 'Week 1 Day 2' });
+    vi.spyOn(useMatchesModule, 'useMatches').mockReturnValue({
+      data: [a, b],
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useMatchesModule.useMatches>);
+
+    renderWithClient(<MatchList range="upcoming" />);
+    expect(screen.getByText('LCK Week 1 Day 2')).toBeInTheDocument();
+    expect(screen.getByText('LPL Week 1 Day 2')).toBeInTheDocument();
+  });
+
+  it('renders both groups (and no duplicate cards) when a live match splits an otherwise-contiguous label run', () => {
+    // Real "today" shape: ONGOING matches are sorted to the front, so
+    // "Week 1 Day 2" ends up as two separate, non-adjacent groups.
+    const liveDay2A = makeMatch({ id: 9002, matchState: 'ONGOING', matchLabel: 'Week 1 Day 2' });
+    const liveDay2B = makeMatch({ id: 9010, matchState: 'ONGOING', matchLabel: 'Week 1 Day 2' });
+    const finishedDay1A = makeMatch({ id: 9006, matchState: 'FINISHED', matchLabel: 'Week 1 Day 1' });
+    const finishedDay1B = makeMatch({ id: 9007, matchState: 'FINISHED', matchLabel: 'Week 1 Day 1' });
+    const finishedDay2A = makeMatch({ id: 9009, matchState: 'FINISHED', matchLabel: 'Week 1 Day 2' });
+    const finishedDay2B = makeMatch({ id: 9008, matchState: 'FINISHED', matchLabel: 'Week 1 Day 2' });
+
+    vi.spyOn(useMatchesModule, 'useMatches').mockReturnValue({
+      data: [liveDay2A, liveDay2B, finishedDay1A, finishedDay1B, finishedDay2A, finishedDay2B],
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useMatchesModule.useMatches>);
+
+    renderWithClient(<MatchList range="today" />);
+
+    expect(screen.getAllByText('LCK Week 1 Day 2')).toHaveLength(2);
+    expect(screen.getAllByText('LCK Week 1 Day 1')).toHaveLength(1);
+    // Every match renders exactly once: 6 matches -> 6 kickoff/score nodes total.
+    expect(screen.getAllByTestId(/score-team-0|kickoff-time/)).toHaveLength(6);
+  });
+
+  it('unmounts the live match card when switching away from the today tab', () => {
+    const live = makeMatch({ id: 9002, matchState: 'ONGOING', matchLabel: 'Week 1 Day 2' });
+    const finishedDay1 = makeMatch({ id: 9006, matchState: 'FINISHED', matchLabel: 'Week 1 Day 1' });
+    const finishedDay2 = makeMatch({ id: 9009, matchState: 'FINISHED', matchLabel: 'Week 1 Day 2' });
+
+    const spy = vi.spyOn(useMatchesModule, 'useMatches');
+    spy.mockReturnValue({
+      data: [live, finishedDay1, finishedDay2],
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useMatchesModule.useMatches>);
+
+    const client = new QueryClient();
+    const { rerender } = render(
+      <QueryClientProvider client={client}>
+        <MatchList range="today" />
+      </QueryClientProvider>
+    );
+    expect(screen.getByText('LIVE')).toBeInTheDocument();
+
+    const yesterdayMatch = makeMatch({ id: 9000, matchState: 'FINISHED', matchLabel: 'Week 1 Day 1' });
+    spy.mockReturnValue({
+      data: [yesterdayMatch],
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useMatchesModule.useMatches>);
+
+    rerender(
+      <QueryClientProvider client={client}>
+        <MatchList range="yesterday" />
+      </QueryClientProvider>
+    );
+
+    expect(screen.queryByText('LIVE')).not.toBeInTheDocument();
+    // Only the single yesterday match should be present - no leaked/duplicated cards.
+    expect(screen.getAllByTestId(/score-team-0|kickoff-time/)).toHaveLength(1);
   });
 });

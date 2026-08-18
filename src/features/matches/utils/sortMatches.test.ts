@@ -5,6 +5,7 @@ import type { Match } from '../types';
 function makeMatch(overrides: Partial<Match>): Match {
   return {
     id: 1,
+    leagueName: 'LCK',
     matchLabel: 'Week 1 Day 2',
     startTime: '2026-08-17T05:00:00Z',
     matchState: 'SCHEDULED',
