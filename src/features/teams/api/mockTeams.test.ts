@@ -9,7 +9,7 @@ describe('MOCK_TEAMS', () => {
     expect(regions.has('LEC')).toBe(true);
   });
 
-  it('every team has a non-empty clubName distinct from any short code pattern', () => {
+  it('every team has a non-empty clubName', () => {
     for (const team of MOCK_TEAMS) {
       expect(team.clubName.length).toBeGreaterThan(0);
     }

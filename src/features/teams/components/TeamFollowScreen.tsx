@@ -11,7 +11,7 @@ export function TeamFollowScreen({ onBack }: { onBack: () => void }) {
           type="button"
           onClick={onBack}
           aria-label="뒤로 가기"
-          className="flex size-8 shrink-0 items-center justify-center rounded-full text-xl leading-none"
+          className="flex size-11 shrink-0 items-center justify-center rounded-full text-xl leading-none"
         >
           ‹
         </button>
