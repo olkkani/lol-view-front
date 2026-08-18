@@ -61,7 +61,7 @@ export function MatchList({ range }: { range: MatchesRange }) {
             {group.leagueName} {group.matchLabel}
           </span>
           {group.matches.map((match) => (
-            <MatchCard key={match.id} match={match} />
+            <MatchCard key={match.id} match={match} range={range} />
           ))}
         </div>
       ))}
