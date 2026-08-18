@@ -14,19 +14,11 @@
 
 **Depends on / blocked by:** prd 백엔드 서버 주소 확정.
 
-## 백엔드 응답 스키마 확정 후 가정 타입 갱신
+## ~~백엔드 응답 스키마 확정 후 가정 타입 갱신~~ (해결됨 2026-08-17)
 
-**What:** `docs/designs/lol-match-viewer.md`의 "API 응답 타입 (가정)" 섹션과 `features/matches/types.ts`(구현 후)를 실제 백엔드 응답으로 검증하고 필요시 수정.
+실제 백엔드 응답을 `curl`로 확인 완료. 가정과 실제가 상당히 달랐음 — `id`는 number, `league` 필드 없음(`matchLabel`로 대체), 팀 정보는 `teams` 튜플이 아니라 `clubs` 배열(0개 또는 2개, 1개는 없음), `isLive` 필드는 없고 `matchState`("SCHEDULED"|"FINISHED"|"ONGOING")로 판별, `seriesFormat` 필드 없음. `types.ts`, `sortMatches.ts`, `MatchCard.tsx`와 관련 테스트를 실제 스키마에 맞춰 전면 갱신함(`docs/superpowers/plans/2026-08-17-real-backend-schema-migration.md` 참고).
 
-**Why:** `/plan-eng-review`에서 백엔드 스키마가 전혀 확인되지 않은 상태로 리뷰가 진행돼, 라이브 여부 필드명, 시리즈 포맷 필드 존재 여부, 취소/연기 경기 표현 방식을 모두 가정으로 문서화했다. 구현 시작 전 실제 `GET localhost:9031/matches?range=today` 응답을 한 번 호출해보지 않으면 타입이 실제와 어긋날 위험이 있다.
-
-**Pros:** 구현 중간에 타입을 다시 뜯어고치는 것을 방지. `sortMatches.ts`의 라이브 판별 로직이 잘못된 필드에 의존하는 것을 조기에 방지.
-
-**Cons:** 백엔드가 아직 해당 range로 실제 데이터를 못 내려줄 수도 있음(개발 환경 상태에 따라 다름) — 이 경우 가정 타입으로 우선 진행하고 이 TODO를 유지.
-
-**Context:** 설계 문서(`docs/designs/lol-match-viewer.md`)의 "API 응답 타입 (가정)" 섹션이 시작점. `useMatches.ts` 구현 직전에 처리하는 게 가장 자연스럽다.
-
-**Depends on / blocked by:** 없음. `features/matches/api/useMatches.ts` 구현(Next Steps 3번) 착수 전에 처리하는 것을 권장.
+CANCELLED/POSTPONED 등 다른 `matchState` 값이 실제로 존재하는지는 여전히 미확인 — 열린 유니온 타입으로 모델링해뒀으니 나중에 관측되면 `MatchState`에 값만 추가하면 됨.
 
 ## 태블릿/데스크톱 반응형 대응
 
@@ -80,7 +72,7 @@
 
 **Context — 항목별:**
 - `vitest.config.ts`가 여전히 deprecated `__dirname` 사용 (vite.config.ts는 이미 `import.meta.dirname`로 수정됨) — 통일 필요.
-- `MatchCard.tsx`의 취소 판정이 `status` 필드를 전혀 안 쓰고 킥오프 시각+스코어 부재로만 추론 — 백엔드 스키마 확정 TODO와 함께 재검토.
+- ~~`MatchCard.tsx`의 취소 판정이 `status` 필드를 전혀 안 쓰고...`~~ (해결됨) — 실제로는 `status`/취소 필드 자체가 백엔드에 없었음. 이제 `matchState`(SCHEDULED/FINISHED/ONGOING) 기반으로 판별하고, 팀 미배정(`clubs: []`)은 별도 "대진 미정" 상태로 처리.
 - 킥오프 시각 표시가 `toLocaleTimeString`으로 브라우저 로컬 타임존을 씀 — 설계 문서는 KST 가정이므로 `timeZone: 'Asia/Seoul'` 명시 필요.
 - 팀 로고 `<img>`에 `onError` 폴백 없음 — URL이 깨지면 깨진 이미지 아이콘 노출 (Open Questions에 이미 기록된 항목).
 - 테스트 파일 3곳(`sortMatches.test.ts`, `MatchCard.test.tsx`, `MatchList.test.tsx`)에 거의 동일한 `makeMatch` 픽스처 팩토리가 중복 — 4번째 복사가 생기면 `test/fixtures.ts`로 추출 고려.
