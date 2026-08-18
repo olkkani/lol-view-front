@@ -1,4 +1,7 @@
 
+# Local git worktrees (superpowers subagent-driven-development)
+.worktrees/
+
 # Created by https://www.toptal.com/developers/gitignore/api/windows,macos,intellij+all,jetbrains+all,java,gradle
 # Edit at https://www.toptal.com/developers/gitignore?templates=windows,macos,intellij+all,jetbrains+all,java,gradle
 
