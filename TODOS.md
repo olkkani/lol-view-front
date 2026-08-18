@@ -20,6 +20,20 @@
 
 CANCELLED/POSTPONED 등 다른 `matchState` 값이 실제로 존재하는지는 여전히 미확인 — 열린 유니온 타입으로 모델링해뒀으니 나중에 관측되면 `MatchState`에 값만 추가하면 됨.
 
+## 설계 문서(docs/designs/lol-match-viewer.md)가 실제 백엔드 스키마와 어긋남
+
+**What:** `docs/designs/lol-match-viewer.md`의 UI 규칙 섹션(72, 77, 78, 93, 136번 줄)과 열린 항목 D1(222번 줄)이 여전히 취소/연기 muted 배지와 시리즈 포맷(Bo3/Bo5) 표시를 명시하고 있다. 둘 다 이제 구현 불가능함이 확인됨 — 백엔드에 취소 필드도, `seriesFormat` 필드도 없다. 문서는 "대진 미정" 상태(실제로는 `upcoming` 탭 경기의 다수 케이스)도 전혀 언급하지 않는다.
+
+**Why:** 실제 스키마 마이그레이션(`docs/superpowers/plans/2026-08-17-real-backend-schema-migration.md`)의 최종 전체 브랜치 리뷰에서 발견. 계획 헤더는 설계 문서의 "API 응답 타입 (가정)" 섹션만 상위 문서로 대체됐다고 명시했지만, UI 규칙 섹션 자체는 갱신되지 않아 지금 배포된 코드와 모순되는 내용을 담고 있다.
+
+**Pros:** 문서와 실제 동작의 불일치를 해소 — 나중에 이 문서를 보고 취소 배지나 시리즈 포맷을 "아직 구현 안 된 것"으로 착각해 재구현 시도하는 걸 방지.
+
+**Cons:** 문서 수정 작업 자체는 낮은 리스크·저비용이지만, 우선순위는 낮음.
+
+**Context:** `docs/designs/lol-match-viewer.md` 72/77/78/93/136번 줄과 D1(222번 줄). "대진 미정" 상태는 `src/features/matches/components/MatchCard.tsx`의 `hasTeams` 분기 참고.
+
+**Depends on / blocked by:** 없음.
+
 ## 태블릿/데스크톱 반응형 대응
 
 **What:** 매치 리스트 뷰를 DESIGN.md의 3단계 반응형 규칙(Mobile <744px, Tablet 744-1128px, Desktop 1128-1440px)에 맞춰 태블릿·데스크톱에서도 자연스럽게 보이도록 확장.
@@ -77,6 +91,8 @@ CANCELLED/POSTPONED 등 다른 `matchState` 값이 실제로 존재하는지는 
 - 팀 로고 `<img>`에 `onError` 폴백 없음 — URL이 깨지면 깨진 이미지 아이콘 노출 (Open Questions에 이미 기록된 항목).
 - 테스트 파일 3곳(`sortMatches.test.ts`, `MatchCard.test.tsx`, `MatchList.test.tsx`)에 거의 동일한 `makeMatch` 픽스처 팩토리가 중복 — 4번째 복사가 생기면 `test/fixtures.ts`로 추출 고려.
 - `fetchMatches.ts`의 `http://localhost:9031`이 하드코딩됨 — 배포 시 깨짐. `import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:9031'`로 미리 대비 가능(배포 자체는 스코프 밖이지만 한 줄 비용).
+- `MatchCard.tsx`의 동점(FINISHED, 스코어 동일) 처리 — 현재 `clubA.score > clubB.score ? 0 : 1` 삼항연산이라 동점이면 항상 팀 A 스코어가 dim 처리됨(승자가 없는데 팀 B가 이긴 것처럼 표시). LoL 매치 스코어링 특성상 동점이 사실상 불가능해 낮은 우선순위지만, 고칠 경우 `winnerIndex = clubA.score === clubB.score ? null : (clubA.score > clubB.score ? 0 : 1)`.
+- "대진 미정"(clubs: []) 카드가 킥오프 시각을 표시하지 않음 — `upcoming` 탭 경기의 다수(실측 15건 중 10건)가 이 상태인데 언제 경기인지 정보가 빠져있음. `startTime`은 이미 응답에 있으니 "대진 미정" 문구 옆에 시각을 같이 보여주는 게 자연스러움 — 다만 UI 판단이라 사용자 확인 필요.
 
 **Depends on / blocked by:** 없음. 각각 독립적으로 아무 때나 처리 가능.
 
