@@ -3,9 +3,16 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Header } from '@/components/layout/Header';
 import { DateTabs } from '@/features/matches/components/DateTabs';
 import { MatchList } from '@/features/matches/components/MatchList';
+import { MatchDetailModal } from '@/features/matches/components/MatchDetailModal';
 import type { MatchesRange } from '@/features/matches/types';
 
-type SearchParams = { range?: MatchesRange };
+type SearchParams = { range?: MatchesRange; matchId?: number };
+
+function parseMatchId(raw: unknown): number | undefined {
+  if (typeof raw !== 'string' && typeof raw !== 'number') return undefined;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
 
 export const Route = createFileRoute('/')({
   validateSearch: (search: Record<string, unknown>): SearchParams => ({
@@ -13,12 +20,13 @@ export const Route = createFileRoute('/')({
       search.range === 'yesterday' || search.range === 'today' || search.range === 'upcoming'
         ? search.range
         : undefined,
+    matchId: parseMatchId(search.matchId),
   }),
   component: HomePage,
 });
 
 function HomePage() {
-  const { range = 'today' } = Route.useSearch();
+  const { range = 'today', matchId } = Route.useSearch();
   const navigate = useNavigate({ from: '/' });
 
   const handleChange = (next: MatchesRange) => {
@@ -32,6 +40,7 @@ function HomePage() {
       <div role="tabpanel" id="match-list-panel">
         <MatchList range={range} />
       </div>
+      <MatchDetailModal range={range} matchId={matchId} />
     </div>
   );
 }
