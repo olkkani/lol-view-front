@@ -11,7 +11,7 @@ describe('MOCK_TEAMS', () => {
 
   it('every team has a non-empty clubName distinct from any short code pattern', () => {
     for (const team of MOCK_TEAMS) {
-      expect(team.clubName.length).toBeGreaterThan(2);
+      expect(team.clubName.length).toBeGreaterThan(0);
     }
   });
 

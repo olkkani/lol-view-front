@@ -7,7 +7,7 @@ import type { Team } from '../types';
  * doesn't carry them. Replace this file when GET /teams exists.
  */
 export const MOCK_TEAMS: Team[] = [
-  { id: 1, region: 'LCK', clubName: 'T1 Esports', logoUrl: 'http://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png', isFollowing: true },
+  { id: 1, region: 'LCK', clubName: 'T1', logoUrl: 'http://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png', isFollowing: true },
   { id: 2, region: 'LCK', clubName: 'Dplus KIA', logoUrl: 'http://static.lolesports.com/teams/1673260049703_DPlusKIALOGO11.png', isFollowing: true },
   { id: 3, region: 'LCK', clubName: 'Hanwha Life Esports', logoUrl: 'http://static.lolesports.com/teams/1631819564399_hle-2021-worlds.png', isFollowing: false },
   { id: 4, region: 'LCK', clubName: 'KT Rolster', logoUrl: 'http://static.lolesports.com/teams/kt_darkbackground.png', isFollowing: false },
