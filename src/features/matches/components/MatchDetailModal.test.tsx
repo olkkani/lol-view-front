@@ -65,6 +65,18 @@ describe('MatchDetailModal', () => {
     expect(screen.getByText('GEN')).toBeInTheDocument();
   });
 
+  it('gives the dialog an accessible name via Dialog.Title', () => {
+    vi.spyOn(useMatchesModule, 'useMatches').mockReturnValue({
+      data: [makeMatch({ id: 1, leagueName: 'LCK', matchLabel: 'Week 1 Day 2' })],
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useMatchesModule.useMatches>);
+
+    renderWithClient(<MatchDetailModal range="today" matchId={1} />);
+    expect(screen.getByRole('dialog', { name: 'LCK Week 1 Day 2' })).toBeInTheDocument();
+  });
+
   it('renders "대진 미정" and omits the head-to-head section when clubs is empty (TBD match)', () => {
     vi.spyOn(useMatchesModule, 'useMatches').mockReturnValue({
       data: [makeMatch({ id: 1, clubs: [] })],
@@ -90,7 +102,10 @@ describe('MatchDetailModal', () => {
     renderWithClient(<MatchDetailModal range="today" matchId={1} />);
     await user.click(screen.getByRole('button', { name: /close/i }));
 
-    expect(mockNavigate).toHaveBeenCalledWith({ search: expect.any(Function) });
+    expect(mockNavigate).toHaveBeenCalledWith({
+      search: expect.any(Function),
+      viewTransition: true,
+    });
     // Verify the search-updater clears matchId without touching other params.
     const updater = mockNavigate.mock.calls[0][0].search;
     expect(updater({ range: 'today', matchId: 1 })).toEqual({ range: 'today', matchId: undefined });
@@ -108,6 +123,9 @@ describe('MatchDetailModal', () => {
     renderWithClient(<MatchDetailModal range="today" matchId={1} />);
     await user.keyboard('{Escape}');
 
-    expect(mockNavigate).toHaveBeenCalledWith({ search: expect.any(Function) });
+    expect(mockNavigate).toHaveBeenCalledWith({
+      search: expect.any(Function),
+      viewTransition: true,
+    });
   });
 });

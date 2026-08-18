@@ -112,6 +112,22 @@ describe('MatchCard', () => {
     expect(screen.queryByTestId('score-team-0')).not.toBeInTheDocument();
   });
 
+  it('sets a viewTransitionName on both team logos by default', () => {
+    const { container } = render(
+      <MatchCard match={makeMatch({ id: 42 })} range="today" />
+    );
+    const named = container.querySelectorAll('[style*="view-transition-name"]');
+    expect(named).toHaveLength(2);
+  });
+
+  it('suppresses the viewTransitionName on both team logos when this match is the currently open one', () => {
+    const { container } = render(
+      <MatchCard match={makeMatch({ id: 42 })} range="today" isDetailOpen />
+    );
+    const named = container.querySelectorAll('[style*="view-transition-name"]');
+    expect(named).toHaveLength(0);
+  });
+
   it('falls back to team initial when logoUrl is empty', () => {
     render(<MatchCard match={makeMatch({})} range="today" />);
     expect(screen.getByText('T')).toBeInTheDocument();
@@ -195,7 +211,10 @@ describe('MatchCard', () => {
     const user = userEvent.setup();
     render(<MatchCard match={makeMatch({ id: 42 })} range="today" />);
     await user.click(screen.getByRole('button'));
-    expect(mockNavigate).toHaveBeenCalledWith({ search: { range: 'today', matchId: 42 } });
+    expect(mockNavigate).toHaveBeenCalledWith({
+      search: { range: 'today', matchId: 42 },
+      viewTransition: true,
+    });
   });
 
   it('calls navigate with matchId on Enter key', async () => {
@@ -203,7 +222,10 @@ describe('MatchCard', () => {
     render(<MatchCard match={makeMatch({ id: 42 })} range="today" />);
     screen.getByRole('button').focus();
     await user.keyboard('{Enter}');
-    expect(mockNavigate).toHaveBeenCalledWith({ search: { range: 'today', matchId: 42 } });
+    expect(mockNavigate).toHaveBeenCalledWith({
+      search: { range: 'today', matchId: 42 },
+      viewTransition: true,
+    });
   });
 
   it('calls navigate with matchId on Space key', async () => {
@@ -211,36 +233,9 @@ describe('MatchCard', () => {
     render(<MatchCard match={makeMatch({ id: 42 })} range="today" />);
     screen.getByRole('button').focus();
     await user.keyboard(' ');
-    expect(mockNavigate).toHaveBeenCalledWith({ search: { range: 'today', matchId: 42 } });
-  });
-
-  it('calls document.startViewTransition when opening the modal, if the browser supports it', async () => {
-    const startViewTransition = vi.fn((cb: () => void) => {
-      cb();
-      return { finished: Promise.resolve(), ready: Promise.resolve(), updateCallbackDone: Promise.resolve() };
+    expect(mockNavigate).toHaveBeenCalledWith({
+      search: { range: 'today', matchId: 42 },
+      viewTransition: true,
     });
-    // @ts-expect-error -- test-only global patch, not in the default DOM lib types
-    document.startViewTransition = startViewTransition;
-
-    const user = userEvent.setup();
-    render(<MatchCard match={makeMatch({ id: 42 })} range="today" />);
-    await user.click(screen.getByRole('button'));
-
-    expect(startViewTransition).toHaveBeenCalledOnce();
-    expect(mockNavigate).toHaveBeenCalledWith({ search: { range: 'today', matchId: 42 } });
-
-    // @ts-expect-error -- cleanup
-    delete document.startViewTransition;
-  });
-
-  it('opens the modal via a plain navigate when the browser does not support View Transitions', async () => {
-    // @ts-expect-error -- ensure the feature-detect branch is exercised
-    delete document.startViewTransition;
-
-    const user = userEvent.setup();
-    render(<MatchCard match={makeMatch({ id: 42 })} range="today" />);
-    await user.click(screen.getByRole('button'));
-
-    expect(mockNavigate).toHaveBeenCalledWith({ search: { range: 'today', matchId: 42 } });
   });
 });

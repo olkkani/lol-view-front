@@ -4,7 +4,15 @@ import { cn } from '@/lib/utils';
 import type { Match, MatchesRange } from '../types';
 import { TeamSlot } from './TeamLogo';
 
-export function MatchCard({ match, range }: { match: Match; range: MatchesRange }) {
+export function MatchCard({
+  match,
+  range,
+  isDetailOpen = false,
+}: {
+  match: Match;
+  range: MatchesRange;
+  isDetailOpen?: boolean;
+}) {
   const navigate = useNavigate({ from: '/' });
   const isOngoing = match.matchState === 'ONGOING';
   const isFinished = match.matchState === 'FINISHED';
@@ -20,13 +28,7 @@ export function MatchCard({ match, range }: { match: Match; range: MatchesRange 
       : null;
 
   const openDetail = () => {
-    if (typeof document.startViewTransition === 'function') {
-      document.startViewTransition(() => {
-        navigate({ search: { range, matchId: match.id } });
-      });
-    } else {
-      navigate({ search: { range, matchId: match.id } });
-    }
+    navigate({ search: { range, matchId: match.id }, viewTransition: true });
   };
 
   return (
@@ -62,7 +64,11 @@ export function MatchCard({ match, range }: { match: Match; range: MatchesRange 
         </div>
       ) : (
         <div className="flex items-center justify-between">
-          <TeamSlot club={clubA!} align="left" viewTransitionName={`team-logo-${match.id}-0`} />
+          <TeamSlot
+            club={clubA!}
+            align="left"
+            viewTransitionName={isDetailOpen ? undefined : `team-logo-${match.id}-0`}
+          />
 
           <div className="flex min-w-14 flex-col items-center gap-0.5 px-3">
             {isFinished || isOngoing ? (
@@ -91,7 +97,11 @@ export function MatchCard({ match, range }: { match: Match; range: MatchesRange 
             )}
           </div>
 
-          <TeamSlot club={clubB!} align="right" viewTransitionName={`team-logo-${match.id}-1`} />
+          <TeamSlot
+            club={clubB!}
+            align="right"
+            viewTransitionName={isDetailOpen ? undefined : `team-logo-${match.id}-1`}
+          />
         </div>
       )}
     </div>

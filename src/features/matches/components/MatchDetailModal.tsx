@@ -19,15 +19,10 @@ export function MatchDetailModal({
   const isOpen = match !== undefined;
 
   const close = () => {
-    const doClose = () =>
-      navigate({
-        search: (prev: Record<string, unknown>) => ({ ...prev, matchId: undefined }),
-      });
-    if (typeof document.startViewTransition === 'function') {
-      document.startViewTransition(doClose);
-    } else {
-      doClose();
-    }
+    navigate({
+      search: (prev: Record<string, unknown>) => ({ ...prev, matchId: undefined }),
+      viewTransition: true,
+    });
   };
 
   const hasTeams = (match?.clubs.length ?? 0) === 2;
@@ -39,9 +34,9 @@ export function MatchDetailModal({
         <Dialog.Backdrop className="fixed inset-0 bg-[color:var(--scrim,#000000)]/40" />
         <Dialog.Popup className="fixed inset-x-0 bottom-0 flex max-h-[85vh] flex-col gap-4 rounded-t-[20px] bg-white p-6">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-[color:var(--muted-ink,#6a6a6a)]">
+            <Dialog.Title className="text-xs font-semibold text-[color:var(--muted-ink,#6a6a6a)]">
               {match ? `${match.leagueName} ${match.matchLabel}` : ''}
-            </span>
+            </Dialog.Title>
             <Dialog.Close aria-label="close" className="min-h-11 min-w-11">
               ✕
             </Dialog.Close>

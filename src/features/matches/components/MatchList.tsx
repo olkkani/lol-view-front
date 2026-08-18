@@ -7,7 +7,7 @@ import { MatchCard } from './MatchCard';
 import { MatchCardSkeleton } from './MatchCardSkeleton';
 import type { MatchesRange } from '../types';
 
-export function MatchList({ range }: { range: MatchesRange }) {
+export function MatchList({ range, openMatchId }: { range: MatchesRange; openMatchId?: number }) {
   const { data, isLoading, isError, refetch } = useMatches(range);
 
   const sorted = useMemo(() => sortMatches(data ?? [], range), [data, range]);
@@ -61,7 +61,12 @@ export function MatchList({ range }: { range: MatchesRange }) {
             {group.leagueName} {group.matchLabel}
           </span>
           {group.matches.map((match) => (
-            <MatchCard key={match.id} match={match} range={range} />
+            <MatchCard
+              key={match.id}
+              match={match}
+              range={range}
+              isDetailOpen={match.id === openMatchId}
+            />
           ))}
         </div>
       ))}

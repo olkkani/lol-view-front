@@ -38,7 +38,7 @@ function HomePage() {
       <Header />
       <DateTabs active={range} onChange={handleChange} />
       <div role="tabpanel" id="match-list-panel">
-        <MatchList range={range} />
+        <MatchList range={range} openMatchId={matchId} />
       </div>
       <MatchDetailModal range={range} matchId={matchId} />
     </div>
