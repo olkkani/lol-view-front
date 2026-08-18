@@ -35,3 +35,13 @@ export interface Match {
    */
   clubs: Club[];
 }
+
+/**
+ * Frontend contract for a future GET /head-to-head?teamA={id}&teamB={id}&limit=5
+ * endpoint. NOT YET VERIFIED against a real backend response — the endpoint
+ * does not exist yet, and Club has no `id` field to construct the query with.
+ * `results` is most-recent-first, capped at 5 entries.
+ */
+export interface HeadToHead {
+  results: ('W' | 'L')[];
+}
