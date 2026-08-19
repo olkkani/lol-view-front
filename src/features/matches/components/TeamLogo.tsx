@@ -5,22 +5,15 @@ export function TeamLogo({
   name,
   logoUrl,
   logoBackdrop,
-  viewTransitionName,
 }: {
   name: string;
   logoUrl: string;
   logoBackdrop?: Club['logoBackdrop'];
-  viewTransitionName?: string;
 }) {
-  const style = viewTransitionName
-    ? ({ viewTransitionName } as React.CSSProperties)
-    : undefined;
-
   if (logoUrl) {
     const hasDarkBackdrop = logoBackdrop === 'DARK';
     return (
       <div
-        style={style}
         className={cn(
           'flex size-8 items-center justify-center rounded-lg',
           hasDarkBackdrop && 'bg-[color:var(--ink,#222222)] dark:bg-transparent'
@@ -35,10 +28,7 @@ export function TeamLogo({
     );
   }
   return (
-    <div
-      style={style}
-      className="flex size-8 items-center justify-center rounded-lg bg-[color:var(--surface-strong,#f2f2f2)] text-sm font-semibold"
-    >
+    <div className="flex size-8 items-center justify-center rounded-lg bg-[color:var(--surface-strong,#f2f2f2)] text-sm font-semibold">
       {name.charAt(0)}
     </div>
   );
@@ -47,11 +37,9 @@ export function TeamLogo({
 export function TeamSlot({
   club,
   align,
-  viewTransitionName,
 }: {
   club: Club;
   align: 'left' | 'right';
-  viewTransitionName?: string;
 }) {
   return (
     <div
@@ -60,12 +48,7 @@ export function TeamSlot({
         align === 'right' && 'flex-row-reverse text-right'
       )}
     >
-      <TeamLogo
-        name={club.name}
-        logoUrl={club.logoUrl}
-        logoBackdrop={club.logoBackdrop}
-        viewTransitionName={viewTransitionName}
-      />
+      <TeamLogo name={club.name} logoUrl={club.logoUrl} logoBackdrop={club.logoBackdrop} />
       <span className="text-sm font-semibold">{club.name}</span>
     </div>
   );
