@@ -79,10 +79,7 @@ describe('MatchList', () => {
     expect(refetch).toHaveBeenCalledOnce();
   });
 
-  it('reorders a match from live-pinned to time-sorted position after a poll updates its status', async () => {
-    // startTime values are relative to "now" so this test doesn't self-expire
-    // once the system clock passes any hardcoded date (same class of bug
-    // fixed in MatchCard.test.tsx during a prior fix round).
+  it('keeps a card in its section across a poll tick, and only moves it after a manual refresh', async () => {
     const now = Date.now();
     const ongoingKickoff = new Date(now + 60 * 60 * 1000).toISOString();
     const scheduledKickoff = new Date(now + 30 * 60 * 1000).toISOString();
@@ -98,6 +95,7 @@ describe('MatchList', () => {
     const scheduled = makeMatch({ id: 2, startTime: scheduledKickoff, matchState: 'SCHEDULED' });
 
     const spy = vi.spyOn(useMatchesModule, 'useMatches');
+    const client = new QueryClient();
 
     spy.mockReturnValue({
       data: [scheduled, ongoing],
@@ -106,11 +104,16 @@ describe('MatchList', () => {
       refetch: vi.fn(),
     } as unknown as ReturnType<typeof useMatchesModule.useMatches>);
 
-    const { rerender } = renderWithClient(<MatchList range="today" />);
+    const { rerender } = render(
+      <QueryClientProvider client={client}>
+        <MatchList range="today" />
+      </QueryClientProvider>
+    );
 
-    let cards = screen.getAllByTestId(/score-team-0|kickoff-time/);
-    expect(cards[0]).toHaveTextContent('1');
+    expect(screen.getByText('진행중')).toBeInTheDocument();
+    expect(screen.queryByText('종료')).not.toBeInTheDocument();
 
+    // Poll tick: matchState flips to FINISHED, but no manual refresh happens.
     const finished = { ...ongoing, matchState: 'FINISHED' as const };
     spy.mockReturnValue({
       data: [finished, scheduled],
@@ -120,14 +123,30 @@ describe('MatchList', () => {
     } as unknown as ReturnType<typeof useMatchesModule.useMatches>);
 
     rerender(
-      <QueryClientProvider client={new QueryClient()}>
+      <QueryClientProvider client={client}>
+        <MatchList range="today" />
+      </QueryClientProvider>
+    );
+
+    // Card must NOT have moved yet — still shows under 진행중, not 종료.
+    expect(screen.getByText('진행중')).toBeInTheDocument();
+    expect(screen.queryByText('종료')).not.toBeInTheDocument();
+
+    // Switching tabs away and back is a manual navigation action, not a background
+    // poll — useFrozenMatches (Task 1 Step 12) resets frozen order on range change.
+    rerender(
+      <QueryClientProvider client={client}>
+        <MatchList range="upcoming" />
+      </QueryClientProvider>
+    );
+    rerender(
+      <QueryClientProvider client={client}>
         <MatchList range="today" />
       </QueryClientProvider>
     );
 
     await waitFor(() => {
-      cards = screen.getAllByTestId(/score-team-0|kickoff-time/);
-      expect(cards[0]).toHaveAttribute('data-testid', 'kickoff-time');
+      expect(screen.getByText('종료')).toBeInTheDocument();
     });
   });
 

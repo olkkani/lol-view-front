@@ -1,17 +1,23 @@
 // src/features/matches/components/MatchList.tsx
 import { useMemo } from 'react';
 import { useMatches } from '../api/useMatches';
-import { sortMatches } from '../utils/sortMatches';
-import { groupAdjacentMatches } from '../utils/groupAdjacentMatches';
-import { MatchCard } from './MatchCard';
+import { useFrozenMatches } from '../hooks/useFrozenMatches';
+import { buildMatchSections } from '../utils/buildMatchSections';
+import { MatchSection } from './MatchSection';
 import { MatchCardSkeleton } from './MatchCardSkeleton';
 import type { MatchesRange } from '../types';
 
 export function MatchList({ range, openMatchId }: { range: MatchesRange; openMatchId?: number }) {
   const { data, isLoading, isError, refetch } = useMatches(range);
+  const { frozen, refresh } = useFrozenMatches(data, range);
 
-  const sorted = useMemo(() => sortMatches(data ?? [], range), [data, range]);
-  const groups = useMemo(() => groupAdjacentMatches(sorted), [sorted]);
+  const sections = useMemo(() => buildMatchSections(frozen, range), [frozen, range]);
+  const totalMatches = frozen.length;
+
+  const handleRetry = () => {
+    refresh();
+    refetch();
+  };
 
   if (isLoading) {
     return (
@@ -29,7 +35,7 @@ export function MatchList({ range, openMatchId }: { range: MatchesRange; openMat
         <p>경기 정보를 불러오지 못했어요.</p>
         <button
           type="button"
-          onClick={() => refetch()}
+          onClick={handleRetry}
           className="min-h-11 rounded-lg border border-[color:var(--ink,#222222)] px-4 text-sm font-medium text-[color:var(--ink,#222222)]"
         >
           다시 시도
@@ -38,7 +44,7 @@ export function MatchList({ range, openMatchId }: { range: MatchesRange; openMat
     );
   }
 
-  if (sorted.length === 0) {
+  if (totalMatches === 0) {
     const emptyMessage =
       range === 'yesterday'
         ? '어제 경기가 없어요'
@@ -55,20 +61,14 @@ export function MatchList({ range, openMatchId }: { range: MatchesRange; openMat
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      {groups.map((group) => (
-        <div key={group.key} className="flex flex-col gap-2">
-          <span className="text-xs font-semibold text-[color:var(--muted-ink,#6a6a6a)]">
-            {group.leagueName} {group.matchLabel}
-          </span>
-          {group.matches.map((match) => (
-            <MatchCard
-              key={match.id}
-              match={match}
-              range={range}
-              isDetailOpen={match.id === openMatchId}
-            />
-          ))}
-        </div>
+      {sections.map((section) => (
+        <MatchSection
+          key={section.status}
+          status={section.status}
+          matches={section.matches}
+          range={range}
+          openMatchId={openMatchId}
+        />
       ))}
     </div>
   );
