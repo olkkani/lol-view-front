@@ -28,6 +28,44 @@ describe('MatchList', () => {
     expect(screen.getAllByRole('generic').length).toBeGreaterThan(0);
   });
 
+  it('shows the fetched matches once loading finishes on a real cold start (data: undefined -> populated)', () => {
+    // Regression test: a real page load goes through isLoading:true/data:undefined
+    // before the query resolves. The list must show the fetched matches once
+    // loading finishes, not the empty state — the initial freeze must not
+    // permanently lock in an empty list from the loading-phase render(s).
+    const match = makeMatch({ id: 1, matchState: 'SCHEDULED' });
+    const spy = vi.spyOn(useMatchesModule, 'useMatches');
+    const client = new QueryClient();
+
+    spy.mockReturnValue({
+      data: undefined,
+      isLoading: true,
+      isError: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useMatchesModule.useMatches>);
+
+    const { rerender } = render(
+      <QueryClientProvider client={client}>
+        <MatchList range="today" />
+      </QueryClientProvider>
+    );
+
+    spy.mockReturnValue({
+      data: [match],
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useMatchesModule.useMatches>);
+    rerender(
+      <QueryClientProvider client={client}>
+        <MatchList range="today" />
+      </QueryClientProvider>
+    );
+
+    expect(screen.getByText('예정')).toBeInTheDocument();
+    expect(screen.queryByText('오늘 예정된 경기가 없어요')).not.toBeInTheDocument();
+  });
+
   it('shows the empty state when there are no matches', () => {
     vi.spyOn(useMatchesModule, 'useMatches').mockReturnValue({
       data: [],
@@ -179,9 +217,10 @@ describe('MatchList', () => {
     expect(screen.getByText('LPL Week 1 Day 2')).toBeInTheDocument();
   });
 
-  it('renders both groups (and no duplicate cards) when a live match splits an otherwise-contiguous label run', () => {
-    // Real "today" shape: ONGOING matches are sorted to the front, so
-    // "Week 1 Day 2" ends up as two separate, non-adjacent groups.
+  it('renders both groups (and no duplicate cards) when the same label appears in two different sections', () => {
+    // Real "today" shape: ongoing and finished matches land in separate
+    // sections (진행중/종료), so "Week 1 Day 2" legitimately ends up as two
+    // separate group headers — one per section — not a single merged group.
     const liveDay2A = makeMatch({ id: 9002, matchState: 'ONGOING', matchLabel: 'Week 1 Day 2' });
     const liveDay2B = makeMatch({ id: 9010, matchState: 'ONGOING', matchLabel: 'Week 1 Day 2' });
     const finishedDay1A = makeMatch({ id: 9006, matchState: 'FINISHED', matchLabel: 'Week 1 Day 1' });

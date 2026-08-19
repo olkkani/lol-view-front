@@ -50,11 +50,25 @@ CANCELLED/POSTPONED 등 다른 `matchState` 값이 실제로 존재하는지는 
 
 ## ~~폴링 재정렬 시 스크롤 위치 보존 (D2) 실제 구현~~ (해결됨 2026-08-19)
 
-`useFrozenMatches` 훅으로 해결. `docs/superpowers/plans/2026-08-19-match-status-sections.md` 참고.
+`useFrozenMatches` 훅으로 해결. `docs/superpowers/plans/2026-08-19-match-status-sections.md` 참고. 단, "탭 재클릭 시 재정렬" 트리거는 별도 미해결 — 아래 "같은 탭 재클릭 시 수동 새로고침(D2 thaw)이 발동하지 않음" 항목 참고.
 
 ## ~~재정렬 통합 테스트가 실제 in-place 업데이트를 검증하지 않음~~ (해결됨 2026-08-19)
 
 `MatchList.test.tsx`의 재작성된 poll 테스트가 단일 `QueryClient`를 재사용하도록 수정됨. `docs/superpowers/plans/2026-08-19-match-status-sections.md` Task 4 참고.
+
+## 같은 탭 재클릭 시 수동 새로고침(D2 thaw)이 발동하지 않음
+
+**What:** D2 설계 규칙(`docs/designs/lol-match-viewer.md`)은 "새로고침 또는 **탭 재클릭** 시에만 재정렬"이라고 명시하지만, 현재 이미 활성화된 탭을 다시 누르는 경우 `useFrozenMatches`의 수동 해제(`refresh()`)가 실제로 발동하지 않는다.
+
+**Why:** `/plan-eng-review` → subagent-driven-development 실행 후 최종 전체 브랜치 리뷰에서 발견. `routes/index.tsx`의 `DateTabs`는 `onChange`에서 `navigate({ search: { range: next } })`를 호출하지만, `next === range`(같은 탭 재클릭)이면 URL search param이 바뀌지 않아 `MatchList`의 `range` prop도 바뀌지 않는다 — `useFrozenMatches`의 유일한 즉시-해제 경로는 `range` 값이 실제로 바뀌는 것뿐이라(`useFrozenMatches.ts`의 `rangeRef.current !== range` 분기), 같은 탭 재클릭은 아무 효과가 없다. 에러 상태의 "다시 시도" 버튼을 통한 `refresh()` 경로는 구현되어 있지만, 정상 상태(에러 아님)에서 사용자가 직접 트리거할 수 있는 새로고침 수단은 현재 없다.
+
+**Pros:** 실제로 구현하면 D2 설계 문서와 완전히 일치. 사용자가 "새로고침하고 싶다"는 의도를 표현할 방법이 생김.
+
+**Cons:** `refresh()`를 `MatchList` 밖(예: `HomePage`, `DateTabs`)으로 끌어올리는 구조 변경이 필요 — 단순 버그 수정이 아니라 설계 판단이 필요함(예: `MatchList`가 `refresh` 콜백을 상위로 노출하거나, 같은 탭 재클릭 시 `MatchList`를 강제로 리마운트하는 `key` 트릭 등). 현재 스코프(match-status-sections 플랜)를 벗어나는 별도 작업으로 분리하는 게 안전하다는 최종 리뷰 판단.
+
+**Context:** `src/routes/index.tsx`의 `handleChange` (같은 값으로 `navigate` 호출 시 no-op), `src/features/matches/hooks/useFrozenMatches.ts`의 `rangeRef.current !== range` 분기(유일한 즉시-해제 트리거). `docs/designs/lol-match-viewer.md`의 D2 규칙("새로고침... 탭을 다시 누를 때만 재정렬") 참고.
+
+**Depends on / blocked by:** 없음. 위 두 D2 관련 TODO와 함께 처리하면 자연스러움.
 
 ## 사소한 후속 정리 항목 모음
 
@@ -69,7 +83,7 @@ CANCELLED/POSTPONED 등 다른 `matchState` 값이 실제로 존재하는지는 
 - ~~`MatchCard.tsx`의 취소 판정이 `status` 필드를 전혀 안 쓰고...`~~ (해결됨) — 실제로는 `status`/취소 필드 자체가 백엔드에 없었음. 이제 `matchState`(SCHEDULED/FINISHED/ONGOING) 기반으로 판별하고, 팀 미배정(`clubs: []`)은 별도 "대진 미정" 상태로 처리.
 - 킥오프 시각 표시가 `toLocaleTimeString`으로 브라우저 로컬 타임존을 씀 — 설계 문서는 KST 가정이므로 `timeZone: 'Asia/Seoul'` 명시 필요.
 - 팀 로고 `<img>`에 `onError` 폴백 없음 — URL이 깨지면 깨진 이미지 아이콘 노출 (Open Questions에 이미 기록된 항목).
-- 테스트 파일 3곳(`sortMatches.test.ts`, `MatchCard.test.tsx`, `MatchList.test.tsx`)에 거의 동일한 `makeMatch` 픽스처 팩토리가 중복 — 4번째 복사가 생기면 `test/fixtures.ts`로 추출 고려.
+- ~~테스트 파일 3곳에 거의 동일한 `makeMatch` 픽스처 팩토리가 중복~~ (해결됨 2026-08-19) — `test/fixtures.ts`로 이미 추출되어 모든 테스트 파일이 공유 중. `sortMatches.test.ts` 자체도 이번 브랜치에서 `buildMatchSections.test.ts`로 대체되며 삭제됨.
 - `fetchMatches.ts`의 `http://localhost:9031`이 하드코딩됨 — 배포 시 깨짐. `import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:9031'`로 미리 대비 가능(배포 자체는 스코프 밖이지만 한 줄 비용).
 - `MatchCard.tsx`의 동점(FINISHED, 스코어 동일) 처리 — 현재 `clubA.score > clubB.score ? 0 : 1` 삼항연산이라 동점이면 항상 팀 A 스코어가 dim 처리됨(승자가 없는데 팀 B가 이긴 것처럼 표시). LoL 매치 스코어링 특성상 동점이 사실상 불가능해 낮은 우선순위지만, 고칠 경우 `winnerIndex = clubA.score === clubB.score ? null : (clubA.score > clubB.score ? 0 : 1)`.
 - "대진 미정"(clubs: []) 카드가 킥오프 시각을 표시하지 않음 — `upcoming` 탭 경기의 다수(실측 15건 중 10건)가 이 상태인데 언제 경기인지 정보가 빠져있음. `startTime`은 이미 응답에 있으니 "대진 미정" 문구 옆에 시각을 같이 보여주는 게 자연스러움 — 다만 UI 판단이라 사용자 확인 필요.

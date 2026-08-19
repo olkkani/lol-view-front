@@ -5,7 +5,7 @@ import { makeMatch } from '../test/fixtures';
 import type { Match, MatchesRange } from '../types';
 
 interface Props {
-  data: Match[];
+  data: Match[] | undefined;
   range: MatchesRange;
 }
 
@@ -58,5 +58,54 @@ describe('useFrozenMatches', () => {
     rerender({ data: upcomingData, range: 'upcoming' as MatchesRange });
 
     expect(result.current.frozen).toEqual(upcomingData);
+  });
+
+  it('adopts the first real data once it arrives, after starting undefined (cold start)', () => {
+    // Regression test: a real page load starts with data=undefined while the
+    // query is loading. The initial freeze must not permanently lock in an
+    // empty list once the fetch succeeds.
+    const arrived = [makeMatch({ id: 1 })];
+    const { result, rerender } = renderHook(
+      ({ data, range }: Props) => useFrozenMatches(data, range),
+      { initialProps: { data: undefined as Match[] | undefined, range: 'today' as const } }
+    );
+
+    expect(result.current.frozen).toEqual([]);
+
+    rerender({ data: arrived, range: 'today' as const });
+
+    expect(result.current.frozen).toEqual(arrived);
+  });
+
+  it('keeps ignoring later poll-tick changes after adopting the first real data', () => {
+    const first = [makeMatch({ id: 1, matchState: 'ONGOING' })];
+    const second = [makeMatch({ id: 1, matchState: 'FINISHED' })];
+    const { result, rerender } = renderHook(
+      ({ data, range }: Props) => useFrozenMatches(data, range),
+      { initialProps: { data: undefined as Match[] | undefined, range: 'today' as const } }
+    );
+
+    rerender({ data: first, range: 'today' as const });
+    expect(result.current.frozen).toEqual(first);
+
+    rerender({ data: second, range: 'today' as const });
+    expect(result.current.frozen).toEqual(first);
+  });
+
+  it('does not clear frozen data when refresh() is called while data is undefined (error state)', () => {
+    const first = [makeMatch({ id: 1, matchState: 'ONGOING' })];
+    const { result, rerender } = renderHook(
+      ({ data, range }: Props) => useFrozenMatches(data, range),
+      { initialProps: { data: first as Match[] | undefined, range: 'today' as const } }
+    );
+    expect(result.current.frozen).toEqual(first);
+
+    // Data goes undefined (e.g. an error mid-poll), then the caller invokes
+    // refresh() (e.g. a retry-button click) while data is still undefined.
+    rerender({ data: undefined, range: 'today' as const });
+    result.current.refresh();
+    rerender({ data: undefined, range: 'today' as const });
+
+    expect(result.current.frozen).toEqual(first);
   });
 });

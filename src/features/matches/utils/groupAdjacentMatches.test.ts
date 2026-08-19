@@ -43,9 +43,11 @@ describe('groupAdjacentMatches', () => {
 
   it('assigns a unique key to every group, even when a live match splits an otherwise-contiguous run', () => {
     // Reproduces the real "today" shape that caused the live-card-persists bug:
-    // ONGOING matches are sorted to the front by sortMatches, so the same
-    // leagueName+matchLabel pair (Week 1 Day 2) can legitimately appear in
-    // two separate, non-adjacent groups.
+    // this test passes ongoing and finished matches in one flat array
+    // (as if pre-section-split), so the same leagueName+matchLabel pair
+    // (Week 1 Day 2) can legitimately appear in two separate, non-adjacent
+    // groups. In the current MatchSection-based UI, the analogous case is
+    // each section independently grouping only its own matches.
     const liveDay2A = makeMatch({ id: 9002, matchState: 'ONGOING', matchLabel: 'Week 1 Day 2' });
     const liveDay2B = makeMatch({ id: 9010, matchState: 'ONGOING', matchLabel: 'Week 1 Day 2' });
     const finishedDay1A = makeMatch({ id: 9006, matchState: 'FINISHED', matchLabel: 'Week 1 Day 1' });

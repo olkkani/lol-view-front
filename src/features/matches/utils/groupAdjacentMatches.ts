@@ -4,9 +4,10 @@ export interface MatchGroup {
   /**
    * Unique per group (derived from the first match's id). The same
    * leagueName+matchLabel pair can legitimately produce more than one
-   * group — e.g. a live match sorted to the front splits an otherwise
-   * contiguous label run — so leagueName+matchLabel alone is NOT a safe
-   * React key. Use this field as the key instead.
+   * group — e.g. each MatchSection (ongoing/finished/upcoming) groups only
+   * its own matches, so the same label can appear in two separate,
+   * independently-rendered groups — so leagueName+matchLabel alone is NOT
+   * a safe React key. Use this field as the key instead.
    */
   key: string;
   leagueName: Match['leagueName'];
