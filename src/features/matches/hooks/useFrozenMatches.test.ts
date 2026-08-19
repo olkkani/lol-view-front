@@ -2,12 +2,18 @@ import { describe, it, expect } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useFrozenMatches } from './useFrozenMatches';
 import { makeMatch } from '../test/fixtures';
+import type { Match, MatchesRange } from '../types';
+
+interface Props {
+  data: Match[];
+  range: MatchesRange;
+}
 
 describe('useFrozenMatches', () => {
   it('freezes to the initial data on first render', () => {
     const initial = [makeMatch({ id: 1 })];
     const { result } = renderHook(
-      ({ data, range }) => useFrozenMatches(data, range),
+      ({ data, range }: Props) => useFrozenMatches(data, range),
       { initialProps: { data: initial, range: 'today' as const } }
     );
     expect(result.current.frozen).toEqual(initial);
@@ -17,7 +23,7 @@ describe('useFrozenMatches', () => {
     const first = [makeMatch({ id: 1, matchState: 'ONGOING' })];
     const second = [makeMatch({ id: 1, matchState: 'FINISHED' })];
     const { result, rerender } = renderHook(
-      ({ data, range }) => useFrozenMatches(data, range),
+      ({ data, range }: Props) => useFrozenMatches(data, range),
       { initialProps: { data: first, range: 'today' as const } }
     );
 
@@ -30,7 +36,7 @@ describe('useFrozenMatches', () => {
     const first = [makeMatch({ id: 1, matchState: 'ONGOING' })];
     const second = [makeMatch({ id: 1, matchState: 'FINISHED' })];
     const { result, rerender } = renderHook(
-      ({ data, range }) => useFrozenMatches(data, range),
+      ({ data, range }: Props) => useFrozenMatches(data, range),
       { initialProps: { data: first, range: 'today' as const } }
     );
 
@@ -45,11 +51,11 @@ describe('useFrozenMatches', () => {
     const todayData = [makeMatch({ id: 1 })];
     const upcomingData = [makeMatch({ id: 2 })];
     const { result, rerender } = renderHook(
-      ({ data, range }) => useFrozenMatches(data, range),
-      { initialProps: { data: todayData, range: 'today' as const } }
+      ({ data, range }: Props) => useFrozenMatches(data, range),
+      { initialProps: { data: todayData, range: 'today' as MatchesRange } }
     );
 
-    rerender({ data: upcomingData, range: 'upcoming' as const });
+    rerender({ data: upcomingData, range: 'upcoming' as MatchesRange });
 
     expect(result.current.frozen).toEqual(upcomingData);
   });
