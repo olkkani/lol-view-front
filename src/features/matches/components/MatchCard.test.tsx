@@ -112,22 +112,6 @@ describe('MatchCard', () => {
     expect(screen.queryByTestId('score-team-0')).not.toBeInTheDocument();
   });
 
-  it('sets a viewTransitionName on both team logos by default', () => {
-    const { container } = render(
-      <MatchCard match={makeMatch({ id: 42 })} range="today" />
-    );
-    const named = container.querySelectorAll('[style*="view-transition-name"]');
-    expect(named).toHaveLength(2);
-  });
-
-  it('suppresses the viewTransitionName on both team logos when this match is the currently open one', () => {
-    const { container } = render(
-      <MatchCard match={makeMatch({ id: 42 })} range="today" isDetailOpen />
-    );
-    const named = container.querySelectorAll('[style*="view-transition-name"]');
-    expect(named).toHaveLength(0);
-  });
-
   it('falls back to team initial when logoUrl is empty', () => {
     render(<MatchCard match={makeMatch({})} range="today" />);
     expect(screen.getByText('T')).toBeInTheDocument();
@@ -213,7 +197,6 @@ describe('MatchCard', () => {
     await user.click(screen.getByRole('button'));
     expect(mockNavigate).toHaveBeenCalledWith({
       search: { range: 'today', matchId: 42 },
-      viewTransition: true,
     });
   });
 
@@ -224,7 +207,6 @@ describe('MatchCard', () => {
     await user.keyboard('{Enter}');
     expect(mockNavigate).toHaveBeenCalledWith({
       search: { range: 'today', matchId: 42 },
-      viewTransition: true,
     });
   });
 
@@ -235,7 +217,6 @@ describe('MatchCard', () => {
     await user.keyboard(' ');
     expect(mockNavigate).toHaveBeenCalledWith({
       search: { range: 'today', matchId: 42 },
-      viewTransition: true,
     });
   });
 });

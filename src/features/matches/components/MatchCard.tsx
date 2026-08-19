@@ -7,11 +7,9 @@ import { TeamSlot } from './TeamLogo';
 export function MatchCard({
   match,
   range,
-  isDetailOpen = false,
 }: {
   match: Match;
   range: MatchesRange;
-  isDetailOpen?: boolean;
 }) {
   const navigate = useNavigate({ from: '/' });
   const isOngoing = match.matchState === 'ONGOING';
@@ -28,7 +26,7 @@ export function MatchCard({
       : null;
 
   const openDetail = () => {
-    navigate({ search: { range, matchId: match.id }, viewTransition: true });
+    navigate({ search: { range, matchId: match.id } });
   };
 
   return (
@@ -64,11 +62,7 @@ export function MatchCard({
         </div>
       ) : (
         <div className="flex items-center justify-between">
-          <TeamSlot
-            club={clubA!}
-            align="left"
-            viewTransitionName={isDetailOpen ? undefined : `team-logo-${match.id}-0`}
-          />
+          <TeamSlot club={clubA!} align="left" />
 
           <div className="flex min-w-14 flex-col items-center gap-0.5 px-3">
             {isFinished || isOngoing ? (
@@ -97,11 +91,7 @@ export function MatchCard({
             )}
           </div>
 
-          <TeamSlot
-            club={clubB!}
-            align="right"
-            viewTransitionName={isDetailOpen ? undefined : `team-logo-${match.id}-1`}
-          />
+          <TeamSlot club={clubB!} align="right" />
         </div>
       )}
     </div>
