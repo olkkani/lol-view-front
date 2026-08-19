@@ -48,33 +48,13 @@ CANCELLED/POSTPONED 등 다른 `matchState` 값이 실제로 존재하는지는 
 
 **Depends on / blocked by:** v1 모바일 구현이 먼저 끝난 뒤 진행 권장.
 
-## 폴링 재정렬 시 스크롤 위치 보존 (D2) 실제 구현
+## ~~폴링 재정렬 시 스크롤 위치 보존 (D2) 실제 구현~~ (해결됨 2026-08-19)
 
-**What:** `docs/designs/lol-match-viewer.md`의 D2 규칙 — 폴링으로 라이브→종료 전환돼도 뷰포트에 보이는 카드는 즉시 움직이지 않고, 새로고침/탭 재클릭 시에만 재정렬 — 을 실제로 구현.
+`useFrozenMatches` 훅으로 해결. `docs/superpowers/plans/2026-08-19-match-status-sections.md` 참고.
 
-**Why:** 최종 전체 브랜치 리뷰(`/plan-eng-review` → subagent-driven-development 실행 후 최종 리뷰)에서 발견. `MatchList.tsx`가 `data` 변경마다 무조건 재정렬하고 있어, D2가 문서에는 있지만 실제로는 구현되지 않은 상태다. Task 6의 브리핑이 "애니메이션 없음"과 "스크롤 중 재정렬 안 함"을 하나로 뭉뚱그려 다뤄서, 어느 태스크도 D2를 명시적으로 책임지지 않았다.
+## ~~재정렬 통합 테스트가 실제 in-place 업데이트를 검증하지 않음~~ (해결됨 2026-08-19)
 
-**Pros:** 실사용 중 스크롤하다가 카드가 갑자기 밑으로 사라지는 나쁜 경험을 방지. 설계 문서와 실제 동작의 불일치 해소.
-
-**Cons:** 구현 방법(정렬 결과를 ref에 freeze하고 range 변경/수동 refetch 시에만 재계산 등)에 대한 설계 판단이 필요 — 단순 수정이 아님.
-
-**Context:** `src/features/matches/components/MatchList.tsx`의 `useMemo(() => sortMatches(...), [data, range])`가 현재 매 데이터 변경마다 재정렬하는 지점. `docs/designs/lol-match-viewer.md` D2 항목과 UI 규칙의 "스크롤 위치 보존" 섹션 참고.
-
-**Depends on / blocked by:** 없음. 아래 "재정렬 통합 테스트 개선" TODO와 함께 처리하는 게 자연스러움(동작을 고치면서 테스트도 실제 동작을 검증하도록 같이 손보기).
-
-## 재정렬 통합 테스트가 실제 in-place 업데이트를 검증하지 않음
-
-**What:** `MatchList.test.tsx`의 "reorders a match from live-pinned to time-sorted position" 테스트가 `rerender` 시 새 `QueryClient`를 매번 생성해서 사실상 "새 마운트"를 테스트하고 있음 — 실제 폴링(같은 클라이언트, 캐시 데이터 업데이트)을 재현하지 않음. 또한 "라이브 경기가 킥오프 시각과 무관하게 최상단에 고정된다"는 핵심 동작이 `MatchList` 레벨에서는 전혀 검증되지 않고 `sortMatches.test.ts`의 고립된 유닛 테스트에만 존재함.
-
-**Why:** 최종 전체 브랜치 리뷰에서 발견. 이 앱의 가장 특징적인 동작(라이브 우선 고정)이 컴포넌트 통합 레벨에서 무증거 상태.
-
-**Pros:** 실제 폴링 시나리오(같은 QueryClient, in-place 캐시 업데이트)를 검증. 회귀 방지.
-
-**Cons:** 위 "D2 스크롤 위치 보존" TODO와 동작이 바뀌면 이 테스트도 다시 손봐야 하므로, 두 TODO를 같이 처리하는 게 효율적 — 동작을 안 바꾼 채 테스트만 고치는 건 낭비.
-
-**Context:** `src/features/matches/components/MatchList.test.tsx`의 마지막 테스트. 같은 `QueryClient` 인스턴스를 재사용하도록 고치고, 킥오프 시각이 늦은 라이브 경기가 이른 예정 경기보다 위에 렌더되는지 확인하는 별도 assertion 추가.
-
-**Depends on / blocked by:** 위 "폴링 재정렬 시 스크롤 위치 보존 (D2) 실제 구현"과 함께 처리 권장.
+`MatchList.test.tsx`의 재작성된 poll 테스트가 단일 `QueryClient`를 재사용하도록 수정됨. `docs/superpowers/plans/2026-08-19-match-status-sections.md` Task 4 참고.
 
 ## 사소한 후속 정리 항목 모음
 
