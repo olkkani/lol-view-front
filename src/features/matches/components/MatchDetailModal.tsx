@@ -21,7 +21,6 @@ export function MatchDetailModal({
   const close = () => {
     navigate({
       search: (prev: Record<string, unknown>) => ({ ...prev, matchId: undefined }),
-      viewTransition: true,
     });
   };
 
@@ -51,13 +50,13 @@ export function MatchDetailModal({
           {match && hasTeams && (
             <>
               <div className="flex items-center justify-between gap-4">
-                <TeamSlot club={clubA!} align="left" viewTransitionName={`team-logo-${match!.id}-0`} />
+                <TeamSlot club={clubA!} align="left" />
                 <div className="flex flex-col items-center gap-0.5 px-3 text-[21px] font-bold tabular-nums">
                   <span>{clubA!.score}</span>
                   <span className="text-sm font-normal text-[color:var(--muted-soft,#929292)]">:</span>
                   <span>{clubB!.score}</span>
                 </div>
-                <TeamSlot club={clubB!} align="right" viewTransitionName={`team-logo-${match!.id}-1`} />
+                <TeamSlot club={clubB!} align="right" />
               </div>
 
               <div>

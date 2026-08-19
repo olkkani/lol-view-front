@@ -104,7 +104,6 @@ describe('MatchDetailModal', () => {
 
     expect(mockNavigate).toHaveBeenCalledWith({
       search: expect.any(Function),
-      viewTransition: true,
     });
     // Verify the search-updater clears matchId without touching other params.
     const updater = mockNavigate.mock.calls[0][0].search;
@@ -125,7 +124,6 @@ describe('MatchDetailModal', () => {
 
     expect(mockNavigate).toHaveBeenCalledWith({
       search: expect.any(Function),
-      viewTransition: true,
     });
   });
 });
