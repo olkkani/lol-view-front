@@ -7,7 +7,7 @@ import { MatchSection } from './MatchSection';
 import { MatchCardSkeleton } from './MatchCardSkeleton';
 import type { MatchesRange } from '../types';
 
-export function MatchList({ range, openMatchId }: { range: MatchesRange; openMatchId?: number }) {
+export function MatchList({ range }: { range: MatchesRange }) {
   const { data, isLoading, isError, refetch } = useMatches(range);
   const { frozen, refresh } = useFrozenMatches(data, range);
 
@@ -67,7 +67,6 @@ export function MatchList({ range, openMatchId }: { range: MatchesRange; openMat
           status={section.status}
           matches={section.matches}
           range={range}
-          openMatchId={openMatchId}
         />
       ))}
     </div>

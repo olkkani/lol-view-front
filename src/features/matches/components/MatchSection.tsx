@@ -12,12 +12,10 @@ export function MatchSection({
   status,
   matches,
   range,
-  openMatchId,
 }: {
   status: 'ongoing' | 'finished' | 'upcoming';
   matches: Match[];
   range: MatchesRange;
-  openMatchId?: number;
 }) {
   if (matches.length === 0) return null;
 
@@ -34,12 +32,7 @@ export function MatchSection({
             {group.leagueName} {group.matchLabel}
           </span>
           {group.matches.map((match) => (
-            <MatchCard
-              key={match.id}
-              match={match}
-              range={range}
-              isDetailOpen={match.id === openMatchId}
-            />
+            <MatchCard key={match.id} match={match} range={range} />
           ))}
         </div>
       ))}
