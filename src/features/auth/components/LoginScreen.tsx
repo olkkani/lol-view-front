@@ -13,7 +13,7 @@ export function LoginScreen() {
         type="button"
         data-testid="login-google"
         onClick={handleGoogleLogin}
-        className="h-12 w-full rounded-sm border border-[color:var(--hairline,#dddddd)] bg-white px-6 text-sm font-medium text-[color:var(--ink,#222222)]"
+        className="h-12 w-full rounded-sm border border-[color:var(--ink,#222222)] bg-white px-[23px] text-sm font-medium text-[color:var(--ink,#222222)]"
       >
         Google로 로그인
       </button>
@@ -23,7 +23,7 @@ export function LoginScreen() {
         data-testid="login-discord"
         disabled
         title="준비 중"
-        className="h-12 w-full cursor-not-allowed rounded-sm border border-[color:var(--hairline-soft,#ebebeb)] bg-white px-6 text-sm font-medium text-[color:var(--muted-soft,#929292)]"
+        className="h-12 w-full cursor-not-allowed rounded-sm border border-[color:var(--hairline-soft,#ebebeb)] bg-white px-[23px] text-sm font-medium text-[color:var(--muted-soft,#929292)]"
       >
         Discord로 로그인
       </button>
@@ -33,7 +33,7 @@ export function LoginScreen() {
         data-testid="login-telegram"
         disabled
         title="준비 중"
-        className="h-12 w-full cursor-not-allowed rounded-sm border border-[color:var(--hairline-soft,#ebebeb)] bg-white px-6 text-sm font-medium text-[color:var(--muted-soft,#929292)]"
+        className="h-12 w-full cursor-not-allowed rounded-sm border border-[color:var(--hairline-soft,#ebebeb)] bg-white px-[23px] text-sm font-medium text-[color:var(--muted-soft,#929292)]"
       >
         Telegram으로 로그인
       </button>
