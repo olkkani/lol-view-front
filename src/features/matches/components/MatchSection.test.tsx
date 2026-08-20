@@ -18,6 +18,15 @@ describe('MatchSection', () => {
     expect(screen.getByText('LCK Week 1 Day 2')).toBeInTheDocument();
   });
 
+  it('does not render a section title on the yesterday/upcoming tabs, since those are a single flat list, not real sections', () => {
+    const match = makeMatch({ id: 1, leagueName: 'LCK', matchLabel: 'Week 1 Day 2' });
+    render(<MatchSection status="upcoming" matches={[match]} range="yesterday" />);
+
+    expect(screen.queryByText('예정')).not.toBeInTheDocument();
+    // The group header and match card still render — only the section <h2> is suppressed.
+    expect(screen.getByText('LCK Week 1 Day 2')).toBeInTheDocument();
+  });
+
   it('is unaware of other sections — the same group header can legitimately appear again in a sibling MatchSection', () => {
     const finishedMatch = makeMatch({ id: 1, leagueName: 'LCK', matchLabel: 'Week 1 Day 2', matchState: 'FINISHED' });
     const upcomingMatch = makeMatch({ id: 2, leagueName: 'LCK', matchLabel: 'Week 1 Day 2', matchState: 'SCHEDULED' });

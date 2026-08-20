@@ -202,6 +202,25 @@ describe('MatchList', () => {
     expect(screen.getAllByText('LCK Week 1 Day 2')).toHaveLength(1);
   });
 
+  it('does not show a "예정" section header on the yesterday or upcoming tabs', () => {
+    // Those tabs render a single flat list, not real ongoing/finished/upcoming
+    // sections — buildMatchSections only wraps them in a MatchSection-shaped
+    // object with status:"upcoming" for code reuse, not because they have a
+    // real section to label. Yesterday matches are finished, so a literal
+    // "예정" header there would be wrong; on the upcoming tab it would just
+    // duplicate the already-selected "예정" date tab.
+    const yesterdayMatch = makeMatch({ id: 1, matchState: 'FINISHED' });
+    vi.spyOn(useMatchesModule, 'useMatches').mockReturnValue({
+      data: [yesterdayMatch],
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as unknown as ReturnType<typeof useMatchesModule.useMatches>);
+
+    renderWithClient(<MatchList range="yesterday" />);
+    expect(screen.queryByText('예정')).not.toBeInTheDocument();
+  });
+
   it('renders separate headers for matches with different leagueName or matchLabel', () => {
     const a = makeMatch({ id: 1, leagueName: 'LCK', matchLabel: 'Week 1 Day 2' });
     const b = makeMatch({ id: 2, leagueName: 'LPL', matchLabel: 'Week 1 Day 2' });
