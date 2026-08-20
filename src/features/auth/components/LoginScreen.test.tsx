@@ -1,14 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LoginScreen } from './LoginScreen';
 
 describe('LoginScreen', () => {
   beforeEach(() => {
-    // jsdom doesn't implement navigation; stub the setter so clicking
+    // jsdom doesn't implement navigation; stub window.location so clicking
     // the Google button doesn't throw "Not implemented: navigation".
-    delete (window as { location?: unknown }).location;
-    window.location = { href: '' } as Location;
+    Object.defineProperty(window, 'location', {
+      value: { href: '' },
+      writable: true,
+    });
   });
 
   it('renders three provider buttons', () => {
