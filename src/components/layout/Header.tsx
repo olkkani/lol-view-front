@@ -18,7 +18,7 @@ export function Header() {
         <span className="h-0.5 w-4.5 rounded-full bg-[color:var(--ink,#222222)]" />
         <span className="h-0.5 w-4.5 rounded-full bg-[color:var(--ink,#222222)]" />
       </button>
-      <HamburgerMenu open={menuOpen} />
+      <HamburgerMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
     </header>
   );
 }

@@ -1,6 +1,8 @@
-export function HeadToHeadRow() {
+import { cn } from '@/lib/utils';
+
+export function HeadToHeadRow({ className }: { className?: string }) {
   return (
-    <div className="flex items-center gap-2 pt-2">
+    <div className={cn('flex items-center gap-2', className)}>
       {Array.from({ length: 5 }, (_, i) => (
         <span
           key={i}

@@ -82,12 +82,23 @@ export function MatchCard({
                 </span>
               </div>
             ) : (
-              <span data-testid="kickoff-time" className="text-lg font-bold tabular-nums">
-                {new Date(match.startTime).toLocaleTimeString('ko-KR', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </span>
+              <div className="flex flex-col items-center gap-0.5">
+                {range === 'upcoming' && (
+                  <span data-testid="kickoff-date" className="text-[11px] font-medium text-[color:var(--muted-ink,#6a6a6a)]">
+                    {new Date(match.startTime).toLocaleDateString('ko-KR', {
+                      month: 'long',
+                      day: 'numeric',
+                      weekday: 'short',
+                    })}
+                  </span>
+                )}
+                <span data-testid="kickoff-time" className="text-lg font-bold tabular-nums">
+                  {new Date(match.startTime).toLocaleTimeString('ko-KR', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </span>
+              </div>
             )}
           </div>
 

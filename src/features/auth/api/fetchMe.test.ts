@@ -17,13 +17,13 @@ describe('fetchMe', () => {
     vi.restoreAllMocks();
   });
 
-  it('calls GET /api/me with credentials included and returns the parsed body', async () => {
+  it('calls GET /api/auth/me with credentials included and returns the parsed body', async () => {
     const mockJson = vi.fn().mockResolvedValue({ id: 42 });
     (ky.get as ReturnType<typeof vi.fn>).mockReturnValue({ json: mockJson });
 
     const result = await fetchMe();
 
-    expect(ky.get).toHaveBeenCalledWith('/api/me', { credentials: 'include' });
+    expect(ky.get).toHaveBeenCalledWith('/api/auth/me', { credentials: 'include' });
     expect(result).toEqual({ id: 42 });
   });
 });

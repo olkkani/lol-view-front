@@ -26,6 +26,7 @@ export function MatchDetailModal({
 
   const hasTeams = (match?.clubs.length ?? 0) === 2;
   const [clubA, clubB] = hasTeams ? match!.clubs : [];
+  const isScheduled = match?.matchState === 'SCHEDULED';
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && close()}>
@@ -51,20 +52,26 @@ export function MatchDetailModal({
             <>
               <div className="flex items-center justify-between gap-4">
                 <TeamSlot club={clubA!} align="left" />
-                <div className="flex flex-col items-center gap-0.5 px-3 text-[21px] font-bold tabular-nums">
-                  <span>{clubA!.score}</span>
-                  <span className="text-sm font-normal text-[color:var(--muted-soft,#929292)]">:</span>
-                  <span>{clubB!.score}</span>
-                </div>
+                {isScheduled ? (
+                  <HeadToHeadRow className="px-3" />
+                ) : (
+                  <div className="flex items-center gap-2 px-3 text-[21px] font-bold tabular-nums">
+                    <span>{clubA!.score}</span>
+                    <span className="text-sm font-normal text-[color:var(--muted-soft,#929292)]">:</span>
+                    <span>{clubB!.score}</span>
+                  </div>
+                )}
                 <TeamSlot club={clubB!} align="right" />
               </div>
 
-              <div>
-                <span className="text-xs font-semibold text-[color:var(--muted-ink,#6a6a6a)]">
-                  Head to Head
-                </span>
-                <HeadToHeadRow />
-              </div>
+              {!isScheduled && (
+                <div>
+                  <span className="text-xs font-semibold text-[color:var(--muted-ink,#6a6a6a)]">
+                    Head to Head
+                  </span>
+                  <HeadToHeadRow className="pt-2" />
+                </div>
+              )}
             </>
           )}
         </Dialog.Popup>
