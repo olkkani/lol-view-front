@@ -33,7 +33,7 @@ describe('MatchList', () => {
     // before the query resolves. The list must show the fetched matches once
     // loading finishes, not the empty state — the initial freeze must not
     // permanently lock in an empty list from the loading-phase render(s).
-    const match = makeMatch({ id: 1, matchState: 'SCHEDULED' });
+    const match = makeMatch({ id: 1, matchState: 'UNSTARTED' });
     const spy = vi.spyOn(useMatchesModule, 'useMatches');
     const client = new QueryClient();
 
@@ -124,13 +124,13 @@ describe('MatchList', () => {
     const ongoing = makeMatch({
       id: 1,
       startTime: ongoingKickoff,
-      matchState: 'ONGOING',
+      matchState: 'IN_PROGRESS',
       clubs: [
         { name: 'T1', logoUrl: '', score: 1 },
         { name: 'GEN', logoUrl: '', score: 0 },
       ],
     });
-    const scheduled = makeMatch({ id: 2, startTime: scheduledKickoff, matchState: 'SCHEDULED' });
+    const scheduled = makeMatch({ id: 2, startTime: scheduledKickoff, matchState: 'UNSTARTED' });
 
     const spy = vi.spyOn(useMatchesModule, 'useMatches');
     const client = new QueryClient();
@@ -151,8 +151,8 @@ describe('MatchList', () => {
     expect(screen.getByText('진행중')).toBeInTheDocument();
     expect(screen.queryByText('종료')).not.toBeInTheDocument();
 
-    // Poll tick: matchState flips to FINISHED, but no manual refresh happens.
-    const finished = { ...ongoing, matchState: 'FINISHED' as const };
+    // Poll tick: matchState flips to COMPLETED, but no manual refresh happens.
+    const finished = { ...ongoing, matchState: 'COMPLETED' as const };
     spy.mockReturnValue({
       data: [finished, scheduled],
       isLoading: false,
@@ -209,7 +209,7 @@ describe('MatchList', () => {
     // real section to label. Yesterday matches are finished, so a literal
     // "예정" header there would be wrong; on the upcoming tab it would just
     // duplicate the already-selected "예정" date tab.
-    const yesterdayMatch = makeMatch({ id: 1, matchState: 'FINISHED' });
+    const yesterdayMatch = makeMatch({ id: 1, matchState: 'COMPLETED' });
     vi.spyOn(useMatchesModule, 'useMatches').mockReturnValue({
       data: [yesterdayMatch],
       isLoading: false,
@@ -240,12 +240,12 @@ describe('MatchList', () => {
     // Real "today" shape: ongoing and finished matches land in separate
     // sections (진행중/종료), so "Week 1 Day 2" legitimately ends up as two
     // separate group headers — one per section — not a single merged group.
-    const liveDay2A = makeMatch({ id: 9002, matchState: 'ONGOING', matchLabel: 'Week 1 Day 2' });
-    const liveDay2B = makeMatch({ id: 9010, matchState: 'ONGOING', matchLabel: 'Week 1 Day 2' });
-    const finishedDay1A = makeMatch({ id: 9006, matchState: 'FINISHED', matchLabel: 'Week 1 Day 1' });
-    const finishedDay1B = makeMatch({ id: 9007, matchState: 'FINISHED', matchLabel: 'Week 1 Day 1' });
-    const finishedDay2A = makeMatch({ id: 9009, matchState: 'FINISHED', matchLabel: 'Week 1 Day 2' });
-    const finishedDay2B = makeMatch({ id: 9008, matchState: 'FINISHED', matchLabel: 'Week 1 Day 2' });
+    const liveDay2A = makeMatch({ id: 9002, matchState: 'IN_PROGRESS', matchLabel: 'Week 1 Day 2' });
+    const liveDay2B = makeMatch({ id: 9010, matchState: 'IN_PROGRESS', matchLabel: 'Week 1 Day 2' });
+    const finishedDay1A = makeMatch({ id: 9006, matchState: 'COMPLETED', matchLabel: 'Week 1 Day 1' });
+    const finishedDay1B = makeMatch({ id: 9007, matchState: 'COMPLETED', matchLabel: 'Week 1 Day 1' });
+    const finishedDay2A = makeMatch({ id: 9009, matchState: 'COMPLETED', matchLabel: 'Week 1 Day 2' });
+    const finishedDay2B = makeMatch({ id: 9008, matchState: 'COMPLETED', matchLabel: 'Week 1 Day 2' });
 
     vi.spyOn(useMatchesModule, 'useMatches').mockReturnValue({
       data: [liveDay2A, liveDay2B, finishedDay1A, finishedDay1B, finishedDay2A, finishedDay2B],
@@ -263,9 +263,9 @@ describe('MatchList', () => {
   });
 
   it('unmounts the live match card when switching away from the today tab', () => {
-    const live = makeMatch({ id: 9002, matchState: 'ONGOING', matchLabel: 'Week 1 Day 2' });
-    const finishedDay1 = makeMatch({ id: 9006, matchState: 'FINISHED', matchLabel: 'Week 1 Day 1' });
-    const finishedDay2 = makeMatch({ id: 9009, matchState: 'FINISHED', matchLabel: 'Week 1 Day 2' });
+    const live = makeMatch({ id: 9002, matchState: 'IN_PROGRESS', matchLabel: 'Week 1 Day 2' });
+    const finishedDay1 = makeMatch({ id: 9006, matchState: 'COMPLETED', matchLabel: 'Week 1 Day 1' });
+    const finishedDay2 = makeMatch({ id: 9009, matchState: 'COMPLETED', matchLabel: 'Week 1 Day 2' });
 
     const spy = vi.spyOn(useMatchesModule, 'useMatches');
     spy.mockReturnValue({
@@ -281,9 +281,10 @@ describe('MatchList', () => {
         <MatchList range="today" />
       </QueryClientProvider>
     );
+    // The LIVE badge lives only on the "진행중" section header, not per-card.
     expect(screen.getByText('LIVE')).toBeInTheDocument();
 
-    const yesterdayMatch = makeMatch({ id: 9000, matchState: 'FINISHED', matchLabel: 'Week 1 Day 1' });
+    const yesterdayMatch = makeMatch({ id: 9000, matchState: 'COMPLETED', matchLabel: 'Week 1 Day 1' });
     spy.mockReturnValue({
       data: [yesterdayMatch],
       isLoading: false,
@@ -297,7 +298,7 @@ describe('MatchList', () => {
       </QueryClientProvider>
     );
 
-    expect(screen.queryByText('LIVE')).not.toBeInTheDocument();
+    expect(screen.queryAllByText('LIVE')).toHaveLength(0);
     // Only the single yesterday match should be present - no leaked/duplicated cards.
     expect(screen.getAllByTestId(/score-team-0|kickoff-time/)).toHaveLength(1);
   });

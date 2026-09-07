@@ -15,5 +15,11 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     globals: true,
+    // Pin so timezone-sensitive assertions (e.g. kickoff time formatting)
+    // are deterministic across machines/CI instead of inheriting the host's
+    // local zone.
+    env: {
+      TZ: 'UTC',
+    },
   },
 });

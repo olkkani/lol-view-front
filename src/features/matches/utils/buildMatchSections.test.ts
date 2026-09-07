@@ -12,9 +12,9 @@ describe('buildMatchSections', () => {
   });
 
   it('splits today matches into ongoing, finished, and upcoming sections in that order', () => {
-    const finished = makeMatch({ id: 1, startTime: '2026-08-17T02:00:00Z', matchState: 'FINISHED' });
-    const ongoing = makeMatch({ id: 2, startTime: '2026-08-17T09:00:00Z', matchState: 'ONGOING' });
-    const scheduled = makeMatch({ id: 3, startTime: '2026-08-17T12:00:00Z', matchState: 'SCHEDULED' });
+    const finished = makeMatch({ id: 1, startTime: '2026-08-17T02:00:00Z', matchState: 'COMPLETED' });
+    const ongoing = makeMatch({ id: 2, startTime: '2026-08-17T09:00:00Z', matchState: 'IN_PROGRESS' });
+    const scheduled = makeMatch({ id: 3, startTime: '2026-08-17T12:00:00Z', matchState: 'UNSTARTED' });
     const result = buildMatchSections([finished, scheduled, ongoing], 'today');
 
     expect(result.map((s) => s.status)).toEqual(['ongoing', 'finished', 'upcoming']);
@@ -24,16 +24,16 @@ describe('buildMatchSections', () => {
   });
 
   it('sorts multiple ongoing matches among themselves by kickoff time', () => {
-    const ongoingLater = makeMatch({ id: 1, startTime: '2026-08-17T09:00:00Z', matchState: 'ONGOING' });
-    const ongoingEarlier = makeMatch({ id: 2, startTime: '2026-08-17T07:00:00Z', matchState: 'ONGOING' });
+    const ongoingLater = makeMatch({ id: 1, startTime: '2026-08-17T09:00:00Z', matchState: 'IN_PROGRESS' });
+    const ongoingEarlier = makeMatch({ id: 2, startTime: '2026-08-17T07:00:00Z', matchState: 'IN_PROGRESS' });
     const result = buildMatchSections([ongoingLater, ongoingEarlier], 'today');
     const ongoingSection = result.find((s) => s.status === 'ongoing')!;
     expect(ongoingSection.matches.map((m) => m.id)).toEqual([2, 1]);
   });
 
   it('ignores matchState on yesterday and upcoming tabs, sorting by kickoff time only', () => {
-    const flaggedOngoing = makeMatch({ id: 1, startTime: '2026-08-16T09:00:00Z', matchState: 'ONGOING' });
-    const normal = makeMatch({ id: 2, startTime: '2026-08-16T05:00:00Z', matchState: 'FINISHED' });
+    const flaggedOngoing = makeMatch({ id: 1, startTime: '2026-08-16T09:00:00Z', matchState: 'IN_PROGRESS' });
+    const normal = makeMatch({ id: 2, startTime: '2026-08-16T05:00:00Z', matchState: 'COMPLETED' });
     const result = buildMatchSections([flaggedOngoing, normal], 'yesterday');
     expect(result).toHaveLength(1);
     expect(result[0].matches.map((m) => m.id)).toEqual([2, 1]);
@@ -41,10 +41,10 @@ describe('buildMatchSections', () => {
 
   it('treats an unrecognized matchState value as not-live, sorting it into upcoming (defensive default)', () => {
     const unknownState = makeMatch({ id: 1, startTime: '2026-08-17T02:00:00Z', matchState: 'CANCELLED' });
-    const scheduled = makeMatch({ id: 2, startTime: '2026-08-17T09:00:00Z', matchState: 'SCHEDULED' });
+    const scheduled = makeMatch({ id: 2, startTime: '2026-08-17T09:00:00Z', matchState: 'UNSTARTED' });
     const result = buildMatchSections([scheduled, unknownState], 'today');
     const upcomingSection = result.find((s) => s.status === 'upcoming')!;
-    // Neither is ONGOING or FINISHED, so both fall into upcoming, kickoff-ascending.
+    // Neither is IN_PROGRESS or COMPLETED, so both fall into upcoming, kickoff-ascending.
     expect(upcomingSection.matches.map((m) => m.id)).toEqual([1, 2]);
   });
 
@@ -54,9 +54,9 @@ describe('buildMatchSections', () => {
   });
 
   it('never drops a match — every input match appears in exactly one section', () => {
-    const a = makeMatch({ id: 1, matchState: 'ONGOING' });
-    const b = makeMatch({ id: 2, matchState: 'FINISHED' });
-    const c = makeMatch({ id: 3, matchState: 'SCHEDULED' });
+    const a = makeMatch({ id: 1, matchState: 'IN_PROGRESS' });
+    const b = makeMatch({ id: 2, matchState: 'COMPLETED' });
+    const c = makeMatch({ id: 3, matchState: 'UNSTARTED' });
     const d = makeMatch({ id: 4, matchState: 'CANCELLED' });
     const result = buildMatchSections([a, b, c, d], 'today');
     const allIds = result.flatMap((s) => s.matches.map((m) => m.id));

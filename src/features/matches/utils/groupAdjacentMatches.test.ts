@@ -48,12 +48,12 @@ describe('groupAdjacentMatches', () => {
     // (Week 1 Day 2) can legitimately appear in two separate, non-adjacent
     // groups. In the current MatchSection-based UI, the analogous case is
     // each section independently grouping only its own matches.
-    const liveDay2A = makeMatch({ id: 9002, matchState: 'ONGOING', matchLabel: 'Week 1 Day 2' });
-    const liveDay2B = makeMatch({ id: 9010, matchState: 'ONGOING', matchLabel: 'Week 1 Day 2' });
-    const finishedDay1A = makeMatch({ id: 9006, matchState: 'FINISHED', matchLabel: 'Week 1 Day 1' });
-    const finishedDay1B = makeMatch({ id: 9007, matchState: 'FINISHED', matchLabel: 'Week 1 Day 1' });
-    const finishedDay2A = makeMatch({ id: 9009, matchState: 'FINISHED', matchLabel: 'Week 1 Day 2' });
-    const finishedDay2B = makeMatch({ id: 9008, matchState: 'FINISHED', matchLabel: 'Week 1 Day 2' });
+    const liveDay2A = makeMatch({ id: 9002, matchState: 'IN_PROGRESS', matchLabel: 'Week 1 Day 2' });
+    const liveDay2B = makeMatch({ id: 9010, matchState: 'IN_PROGRESS', matchLabel: 'Week 1 Day 2' });
+    const finishedDay1A = makeMatch({ id: 9006, matchState: 'COMPLETED', matchLabel: 'Week 1 Day 1' });
+    const finishedDay1B = makeMatch({ id: 9007, matchState: 'COMPLETED', matchLabel: 'Week 1 Day 1' });
+    const finishedDay2A = makeMatch({ id: 9009, matchState: 'COMPLETED', matchLabel: 'Week 1 Day 2' });
+    const finishedDay2B = makeMatch({ id: 9008, matchState: 'COMPLETED', matchLabel: 'Week 1 Day 2' });
 
     const result = groupAdjacentMatches([
       liveDay2A,

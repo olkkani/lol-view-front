@@ -44,7 +44,7 @@ describe('Header', () => {
     const user = userEvent.setup();
     renderHeader();
     await user.click(await screen.findByRole('button', { name: /메뉴/i }));
-    expect(screen.getByRole('menu')).toBeInTheDocument();
+    expect(await screen.findByRole('menu')).toBeInTheDocument();
   });
 
   it('shows a 팔로우 팀 추가 link to /teams and closes the menu on click', async () => {
@@ -52,7 +52,7 @@ describe('Header', () => {
     renderHeader();
     await user.click(await screen.findByRole('button', { name: /메뉴/i }));
 
-    const item = screen.getByRole('menuitem', { name: /팔로우 팀 추가/ });
+    const item = await screen.findByRole('menuitem', { name: /팔로우 팀 추가/ });
     expect(item).toHaveAttribute('href', '/teams');
 
     await user.click(item);
@@ -64,6 +64,7 @@ describe('Header', () => {
     renderHeader({ loggedIn: false });
     await user.click(await screen.findByRole('button', { name: /메뉴/i }));
 
+    await screen.findByRole('menu');
     expect(screen.queryByRole('menuitem', { name: /로그아웃/ })).not.toBeInTheDocument();
   });
 

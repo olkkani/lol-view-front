@@ -2,6 +2,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { cn } from '@/lib/utils';
 import type { Match, MatchesRange } from '../types';
+import { formatKickoffDate, formatKickoffTime } from '../utils/formatKickoff';
 import { TeamSlot } from './TeamLogo';
 
 export function MatchCard({
@@ -12,8 +13,8 @@ export function MatchCard({
   range: MatchesRange;
 }) {
   const navigate = useNavigate({ from: '/' });
-  const isOngoing = match.matchState === 'ONGOING';
-  const isFinished = match.matchState === 'FINISHED';
+  const isOngoing = match.matchState === 'IN_PROGRESS';
+  const isFinished = match.matchState === 'COMPLETED';
   const hasTeams = match.clubs.length === 2;
 
   const [clubA, clubB] = hasTeams ? match.clubs : [];
@@ -26,7 +27,7 @@ export function MatchCard({
       : null;
 
   const openDetail = () => {
-    navigate({ search: { range, matchId: match.id } });
+    navigate({ search: { range, matchId: match.id }, replace: true });
   };
 
   return (
@@ -47,15 +48,6 @@ export function MatchCard({
         isOngoing && 'border-[color:var(--brand-rausch,#ff385c)]'
       )}
     >
-      {isOngoing && (
-        <div className="flex items-center justify-end">
-          <span className="inline-flex items-center gap-1 rounded-full bg-[color:var(--brand-rausch,#ff385c)] px-2 py-0.5 text-[11px] font-bold text-white">
-            <span className="size-1.5 rounded-full bg-white" />
-            LIVE
-          </span>
-        </div>
-      )}
-
       {!hasTeams ? (
         <div className="py-2 text-center text-sm text-[color:var(--muted-ink,#6a6a6a)]">
           대진 미정
@@ -85,18 +77,11 @@ export function MatchCard({
               <div className="flex flex-col items-center gap-0.5">
                 {range === 'upcoming' && (
                   <span data-testid="kickoff-date" className="text-[11px] font-medium text-[color:var(--muted-ink,#6a6a6a)]">
-                    {new Date(match.startTime).toLocaleDateString('ko-KR', {
-                      month: 'long',
-                      day: 'numeric',
-                      weekday: 'short',
-                    })}
+                    {formatKickoffDate(match.startTime)}
                   </span>
                 )}
                 <span data-testid="kickoff-time" className="text-lg font-bold tabular-nums">
-                  {new Date(match.startTime).toLocaleTimeString('ko-KR', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
+                  {formatKickoffTime(match.startTime)}
                 </span>
               </div>
             )}

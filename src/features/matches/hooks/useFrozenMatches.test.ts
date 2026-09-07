@@ -20,8 +20,8 @@ describe('useFrozenMatches', () => {
   });
 
   it('does not update frozen when data changes without calling refresh (poll tick)', () => {
-    const first = [makeMatch({ id: 1, matchState: 'ONGOING' })];
-    const second = [makeMatch({ id: 1, matchState: 'FINISHED' })];
+    const first = [makeMatch({ id: 1, matchState: 'IN_PROGRESS' })];
+    const second = [makeMatch({ id: 1, matchState: 'COMPLETED' })];
     const { result, rerender } = renderHook(
       ({ data, range }: Props) => useFrozenMatches(data, range),
       { initialProps: { data: first, range: 'today' as const } }
@@ -33,8 +33,8 @@ describe('useFrozenMatches', () => {
   });
 
   it('updates frozen to the latest data when refresh() is called', () => {
-    const first = [makeMatch({ id: 1, matchState: 'ONGOING' })];
-    const second = [makeMatch({ id: 1, matchState: 'FINISHED' })];
+    const first = [makeMatch({ id: 1, matchState: 'IN_PROGRESS' })];
+    const second = [makeMatch({ id: 1, matchState: 'COMPLETED' })];
     const { result, rerender } = renderHook(
       ({ data, range }: Props) => useFrozenMatches(data, range),
       { initialProps: { data: first, range: 'today' as const } }
@@ -78,8 +78,8 @@ describe('useFrozenMatches', () => {
   });
 
   it('keeps ignoring later poll-tick changes after adopting the first real data', () => {
-    const first = [makeMatch({ id: 1, matchState: 'ONGOING' })];
-    const second = [makeMatch({ id: 1, matchState: 'FINISHED' })];
+    const first = [makeMatch({ id: 1, matchState: 'IN_PROGRESS' })];
+    const second = [makeMatch({ id: 1, matchState: 'COMPLETED' })];
     const { result, rerender } = renderHook(
       ({ data, range }: Props) => useFrozenMatches(data, range),
       { initialProps: { data: undefined as Match[] | undefined, range: 'today' as const } }
@@ -93,7 +93,7 @@ describe('useFrozenMatches', () => {
   });
 
   it('does not clear frozen data when refresh() is called while data is undefined (error state)', () => {
-    const first = [makeMatch({ id: 1, matchState: 'ONGOING' })];
+    const first = [makeMatch({ id: 1, matchState: 'IN_PROGRESS' })];
     const { result, rerender } = renderHook(
       ({ data, range }: Props) => useFrozenMatches(data, range),
       { initialProps: { data: first as Match[] | undefined, range: 'today' as const } }

@@ -30,7 +30,7 @@ function HomePage() {
   const navigate = useNavigate({ from: '/' });
 
   const handleChange = (next: MatchesRange) => {
-    navigate({ search: { range: next } });
+    navigate({ search: { range: next }, replace: true });
   };
 
   return (

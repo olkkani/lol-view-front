@@ -6,11 +6,11 @@ export interface MatchSection {
 }
 
 function isOngoing(match: Match): boolean {
-  return match.matchState === 'ONGOING';
+  return match.matchState === 'IN_PROGRESS';
 }
 
 function isFinished(match: Match): boolean {
-  return match.matchState === 'FINISHED';
+  return match.matchState === 'COMPLETED';
 }
 
 const byKickoffAsc = (a: Match, b: Match) =>

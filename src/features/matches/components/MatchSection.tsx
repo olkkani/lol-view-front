@@ -1,4 +1,5 @@
 import { groupAdjacentMatches } from '../utils/groupAdjacentMatches';
+import { LiveBadge } from './LiveBadge';
 import { MatchCard } from './MatchCard';
 import type { Match, MatchesRange } from '../types';
 
@@ -24,8 +25,9 @@ export function MatchSection({
   return (
     <div className="flex flex-col gap-3">
       {range === 'today' && (
-        <h2 className="text-sm font-bold text-[color:var(--ink,#222222)]">
+        <h2 className="flex items-center gap-2 text-sm font-bold text-[color:var(--ink,#222222)]">
           {SECTION_TITLES[status]}
+          {status === 'ongoing' && <LiveBadge />}
         </h2>
       )}
       {groups.map((group) => (

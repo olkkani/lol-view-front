@@ -18,6 +18,19 @@ describe('MatchSection', () => {
     expect(screen.getByText('LCK Week 1 Day 2')).toBeInTheDocument();
   });
 
+  it('shows a LIVE badge next to the section title only for the ongoing section', () => {
+    const ongoingMatch = makeMatch({ id: 1, leagueName: 'LCK', matchLabel: 'Week 1 Day 2', matchState: 'IN_PROGRESS' });
+    const finishedMatch = makeMatch({ id: 2, leagueName: 'LCK', matchLabel: 'Week 1 Day 1', matchState: 'COMPLETED' });
+
+    const { rerender } = render(
+      <MatchSection status="ongoing" matches={[ongoingMatch]} range="today" />
+    );
+    expect(screen.getByText('LIVE')).toBeInTheDocument();
+
+    rerender(<MatchSection status="finished" matches={[finishedMatch]} range="today" />);
+    expect(screen.queryByText('LIVE')).not.toBeInTheDocument();
+  });
+
   it('does not render a section title on the yesterday/upcoming tabs, since those are a single flat list, not real sections', () => {
     const match = makeMatch({ id: 1, leagueName: 'LCK', matchLabel: 'Week 1 Day 2' });
     render(<MatchSection status="upcoming" matches={[match]} range="yesterday" />);
@@ -28,8 +41,8 @@ describe('MatchSection', () => {
   });
 
   it('is unaware of other sections — the same group header can legitimately appear again in a sibling MatchSection', () => {
-    const finishedMatch = makeMatch({ id: 1, leagueName: 'LCK', matchLabel: 'Week 1 Day 2', matchState: 'FINISHED' });
-    const upcomingMatch = makeMatch({ id: 2, leagueName: 'LCK', matchLabel: 'Week 1 Day 2', matchState: 'SCHEDULED' });
+    const finishedMatch = makeMatch({ id: 1, leagueName: 'LCK', matchLabel: 'Week 1 Day 2', matchState: 'COMPLETED' });
+    const upcomingMatch = makeMatch({ id: 2, leagueName: 'LCK', matchLabel: 'Week 1 Day 2', matchState: 'UNSTARTED' });
 
     render(
       <>

@@ -20,6 +20,12 @@
 
 CANCELLED/POSTPONED 등 다른 `matchState` 값이 실제로 존재하는지는 여전히 미확인 — 열린 유니온 타입으로 모델링해뒀으니 나중에 관측되면 `MatchState`에 값만 추가하면 됨.
 
+## ~~matchState 값이 백엔드에서 재변경됨 (SCHEDULED/FINISHED/ONGOING → UNSTARTED/COMPLETED/IN_PROGRESS)~~ (해결됨 2026-09-07)
+
+`curl "$VITE_API_TARGET/matches?range=today|yesterday|upcoming"`로 재확인한 결과 `matchState` 값이 또 바뀌어 있었음 — 기존 `SCHEDULED`/`FINISHED`/`ONGOING`은 세 range 어디서도 더 이상 관측되지 않고, 대신 `UNSTARTED`/`COMPLETED`/`IN_PROGRESS`가 관측됨. 이 때문에 라이브 배지, "진행중" 섹션 최상단 배치, 점수/킥오프 시각 분기, 상세 모달의 head-to-head 표시가 전부 조용히 깨져 있었음(옛 값 기준 판별이라 모든 매치가 "예정" 취급됨). `types.ts`의 `MatchState`, `MatchCard.tsx`의 `isOngoing`/`isFinished`, `buildMatchSections.ts`의 `isOngoing`/`isFinished`, `MatchDetailModal.tsx`의 `isScheduled`와 모든 관련 테스트/픽스처를 새 값으로 갱신. `MatchSection.tsx`의 "진행중" 섹션 헤더와 `buildMatchSections`의 섹션 순서(`ongoing`이 배열 첫 요소)는 이미 존재하던 구조라 별도 컴포넌트 추가 없이 값 교체만으로 복구됨.
+
+CANCELLED/POSTPONED 등은 여전히 미관측 — 열린 유니온이라 관측되면 값만 추가하면 됨.
+
 ## 설계 문서(docs/designs/lol-match-viewer.md)가 실제 백엔드 스키마와 어긋남
 
 **What:** `docs/designs/lol-match-viewer.md`의 UI 규칙 섹션(72, 77, 78, 93, 136번 줄)과 열린 항목 D1(222번 줄)이 여전히 취소/연기 muted 배지와 시리즈 포맷(Bo3/Bo5) 표시를 명시하고 있다. 둘 다 이제 구현 불가능함이 확인됨 — 백엔드에 취소 필드도, `seriesFormat` 필드도 없다. 문서는 "대진 미정" 상태(실제로는 `upcoming` 탭 경기의 다수 케이스)도 전혀 언급하지 않는다.
@@ -81,7 +87,7 @@ CANCELLED/POSTPONED 등 다른 `matchState` 값이 실제로 존재하는지는 
 **Context — 항목별:**
 - `vitest.config.ts`가 여전히 deprecated `__dirname` 사용 (vite.config.ts는 이미 `import.meta.dirname`로 수정됨) — 통일 필요.
 - ~~`MatchCard.tsx`의 취소 판정이 `status` 필드를 전혀 안 쓰고...`~~ (해결됨) — 실제로는 `status`/취소 필드 자체가 백엔드에 없었음. 이제 `matchState`(SCHEDULED/FINISHED/ONGOING) 기반으로 판별하고, 팀 미배정(`clubs: []`)은 별도 "대진 미정" 상태로 처리.
-- 킥오프 시각 표시가 `toLocaleTimeString`으로 브라우저 로컬 타임존을 씀 — 설계 문서는 KST 가정이므로 `timeZone: 'Asia/Seoul'` 명시 필요.
+- ~~킥오프 시각 표시가 `toLocaleTimeString`으로 브라우저 로컬 타임존을 씀~~ (해결됨 2026-09-07) — `utils/formatKickoff.ts`로 추출, `timeZone: 'Asia/Seoul'` 명시. `startTime`은 이미 `+09:00` 오프셋 포함이라 파싱은 원래 정상이었고, 문제는 렌더링 단계였음. `vitest.config.ts`에 `TZ: 'UTC'` 고정 + `MatchCard.test.tsx` KST 회귀 테스트 추가.
 - 팀 로고 `<img>`에 `onError` 폴백 없음 — URL이 깨지면 깨진 이미지 아이콘 노출 (Open Questions에 이미 기록된 항목).
 - ~~테스트 파일 3곳에 거의 동일한 `makeMatch` 픽스처 팩토리가 중복~~ (해결됨 2026-08-19) — `test/fixtures.ts`로 이미 추출되어 모든 테스트 파일이 공유 중. `sortMatches.test.ts` 자체도 이번 브랜치에서 `buildMatchSections.test.ts`로 대체되며 삭제됨.
 - `fetchMatches.ts`의 `http://localhost:9031`이 하드코딩됨 — 배포 시 깨짐. `import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:9031'`로 미리 대비 가능(배포 자체는 스코프 밖이지만 한 줄 비용).

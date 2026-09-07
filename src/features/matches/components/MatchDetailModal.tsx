@@ -21,12 +21,13 @@ export function MatchDetailModal({
   const close = () => {
     navigate({
       search: (prev: Record<string, unknown>) => ({ ...prev, matchId: undefined }),
+      replace: true,
     });
   };
 
   const hasTeams = (match?.clubs.length ?? 0) === 2;
   const [clubA, clubB] = hasTeams ? match!.clubs : [];
-  const isScheduled = match?.matchState === 'SCHEDULED';
+  const isScheduled = match?.matchState === 'UNSTARTED';
 
   return (
     <Dialog.Root open={isOpen} onOpenChange={(open) => !open && close()}>

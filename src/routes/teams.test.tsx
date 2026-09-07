@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react';
 import { createRootRoute, createRoute, createRouter, RouterProvider } from '@tanstack/react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as useMeModule from '@/features/auth/api/useMe';
+import * as fetchClubsModule from '@/features/teams/api/fetchClubs';
 import { TeamsPage } from './teams';
 
 function renderTeamsPage() {
@@ -62,6 +63,7 @@ describe('TeamsPage', () => {
       error: null,
       refetch: vi.fn(),
     } as unknown as ReturnType<typeof useMeModule.useMe>);
+    vi.spyOn(fetchClubsModule, 'fetchClubs').mockResolvedValue([]);
 
     renderTeamsPage();
 
