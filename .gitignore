@@ -16,7 +16,6 @@ bckend/**/build/
 ## Frontend
 ### Env
 .env
-.env.dev
 !.env.example
 ### Log
 npm-debug.log*
